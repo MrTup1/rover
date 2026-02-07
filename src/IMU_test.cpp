@@ -40,5 +40,5 @@ void loop() {
   Serial.print(" Y: "); Serial.print(linearaccel.y());
   Serial.print(" Z: "); Serial.println(linearaccel.z());
 
-  delay(100);
-} //this is a test
+  delay(100); //sussy
+} //this is a test woah
