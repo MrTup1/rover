@@ -41,4 +41,4 @@ void loop() {
   Serial.print(" Z: "); Serial.println(linearaccel.z());
 
   delay(100);
-}
+} //this is a test
