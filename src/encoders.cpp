@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include "Encoders.h"
-#include "Pins.h"
+#include "encoders.h"
+#include "pins.h"
 
 // counts for calculation each motor speed
 volatile long encFL = 0, encFR = 0, encBL = 0, encBR = 0;

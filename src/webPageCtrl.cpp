@@ -1,7 +1,7 @@
-#include "WebPageCtrl.h"
-#include "WebPage.h"
-#include "Motors.h"
-#include "Encoders.h"
+#include "webPageCtrl.h"
+#include "webPage.h"
+#include "motors.h"
+#include "encoders.h"
 
 extern int SPEED;
 

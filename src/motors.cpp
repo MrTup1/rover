@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include "Motors.h"
-#include "Pins.h"
+#include "motors.h"
+#include "pins.h"
 
 void motorsInit() {
   pinMode(DIR_FL, OUTPUT);
