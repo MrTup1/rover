@@ -3,6 +3,13 @@
 #include "encoders.h"
 #include "IMU.h"       
 #include "pins.h"
+#include <WiFi.h>
+#include <WebServer.h>
+#include "webPageCtrl.h"
+
+WebServer server(80);
+int SPEED = 100;
+unsigned long lastPrintTime = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -10,21 +17,28 @@ void setup() {
   motorsInit();
   encodersInit();
   IMU_init(); //This blocks anything until calibration is complete
+    
+  WiFi.softAP("ESP32-Group B rover", "Williscool");
+
+  setupWebServer(server);
+  server.begin();
 }
 
 
 void loop() {
-  updateIMU();
+  server.handleClient(); // Listens for Web Page buttons
+  updateSpeeds();        // Updates encoder math
+  updateIMU();           // Updates Pitch/Roll/Heading
 
-  // Now you can use the variables directly!
-  // Example: Stop if the rover tilts too much
   if (abs(pitch) > 45 || abs(roll) > 45) {
       Serial.println("DANGER: TILT DETECTED!");
       stop();
   }
   
-  // Example: Print heading
-  Serial.print("Pitch: "); Serial.println(pitch);
-
-  delay(50);
+  if (millis() - lastPrintTime >= 500) {
+    Serial.print("Pitch: "); 
+    Serial.println(pitch);
+    
+    lastPrintTime = millis(); // Reset the stopwatch
+  }
 }

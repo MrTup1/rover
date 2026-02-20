@@ -33,6 +33,5 @@
 //IMU
 #define IMU_SDA 21
 #define IMU_SCL 17
-#define LED_PIN 2   // Built-in LED for calibration status
 
 #endif

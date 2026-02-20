@@ -18,8 +18,6 @@ float accY = 0;
 float accZ = 0;
 
 void IMU_init() {
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW); // Turn LED LOW to show IMU uncalibrated
   Wire.begin(21, 17); //Pin 21 is SDA, Pin 17 is SCL
   Serial.begin(115200);
   Serial.println("BNO055 Orientation Sensor Test");
@@ -45,11 +43,9 @@ void IMU_init() {
     Serial.print ("\nG="); Serial.print(gyro);
     Serial.print( "\nA="); Serial.print(accel);
 
-    digitalWrite(LED_PIN, !digitalRead(LED_PIN)); //Blinking LED
     delay(500);
   }
 
-  digitalWrite(LED_PIN, LOW);
   Serial.println("\n Calibration of BNO055 is complete!");
 }
 

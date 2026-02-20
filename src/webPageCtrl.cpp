@@ -2,6 +2,7 @@
 #include "webPage.h"
 #include "motors.h"
 #include "encoders.h"
+#include "IMU.h"
 
 extern int SPEED;
 
@@ -29,7 +30,8 @@ void setupWebServer(WebServer &server) {
     json += "\"FL\":" + String(fl,1) + ",";
     json += "\"FR\":" + String(fr,1) + ",";
     json += "\"BL\":" + String(bl,1) + ",";
-    json += "\"BR\":" + String(br,1);
+    json += "\"BR\":" + String(br,1) + ",";
+    json += "\"Pitch\":" + String(pitch,1); // <--- ADD THIS LINE
     json += "}";
     server.send(200, "application/json", json);
   });
