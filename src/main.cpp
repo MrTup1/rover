@@ -28,6 +28,7 @@ void setup() {
 void loop() {
   server.handleClient(); // Listens for Web Page buttons
   updateSpeeds();        // Updates encoder math
+  updateDistances();     // Updates encoder distance
   updateIMU();           // Updates Pitch/Roll/Heading
 
   if (abs(pitch) > 45 || abs(roll) > 45) {
