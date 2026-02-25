@@ -10,5 +10,6 @@ extern float leftSideDistance, rightSideDistance;
 void encodersInit();
 void updateSpeeds();
 void updateDistances();
+void resetEncoders();
 
 #endif

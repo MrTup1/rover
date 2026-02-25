@@ -95,3 +95,26 @@ void updateDistances() {
   leftSideDistance = (distFL + distBL) / 2.0; //Average distance of the 2 left wheels
   rightSideDistance = (distFR + distBR) / 2.0;
 }
+
+void resetEncoders() {
+  noInterrupts();
+  encFL = 0;
+  encFR = 0;
+  encBL = 0;
+  encBR = 0;
+  interrupts(); 
+
+  // reset last variables for updateSpeed function
+  lastFL = 0;
+  lastFR = 0;
+  lastBL = 0;
+  lastBR = 0;
+
+  // reset calculated distance for updateDistances function
+  distFL = 0;
+  distFR = 0;
+  distBL = 0;
+  distBR = 0;
+  leftSideDistance = 0;
+  rightSideDistance = 0;
+}
