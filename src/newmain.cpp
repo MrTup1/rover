@@ -18,6 +18,11 @@ float targetAngle = 0.0;
 float desiredHeading = 0.0;
 float error = 9999;
 float distance_error = 9999;
+
+//P controller heading variables
+float Kp = 0.6;
+int baseSpeed = 100;
+
 bool promptPrinted = false; // Ensures we only print the prompt once
 
 void setup() {
@@ -26,7 +31,7 @@ void setup() {
   delay(1000);
   motorsInit();
   encodersInit();
-  //IMU_init(); //This blocks anything until calibration is complete
+  IMU_init(); //This blocks anything until calibration is complete
     
   WiFi.softAP("ESP32-Group B rover", "Williscool");
 
@@ -39,7 +44,7 @@ void loop() {
   server.handleClient(); // Listens for Web Page buttons
   updateSpeeds();        // Updates encoder math
   updateDistances();     // Updates encoder distance
-  //updateIMU();           // Updates Pitch/Roll/Heading
+  updateIMU();           // Updates Pitch/Roll/Heading
 
   
   if (abs(pitch) > 45 || abs(roll) > 45) {
@@ -49,7 +54,7 @@ void loop() {
   
   if (!promptPrinted) { //Ensure prompt is printed only once
     if (inputState == 0) {
-      Serial.println("Enter target Distance (m): ");
+      Serial.println("Enter target Distance (mm): ");
     } else if (inputState == 1) {
       Serial.println("Enter target ANGLE (degrees)");
     }
@@ -59,7 +64,7 @@ void loop() {
 
   while (Serial.available()) {
       char incomingChar = Serial.read();  // Read each character from the buffer
-      
+      if (incomingChar == '\r') continue;
       if (incomingChar == '\n') {  // Check if the user pressed Enter (new line character)
         if (receivedMessage.length() > 0) { //Ignore input if empty
           if (inputState == 0) {
@@ -112,12 +117,29 @@ void loop() {
       Serial.println("Turn complete. Starting forward drive.");
       inputState = 3;
     }
+  }
   
-  if (inputState == 3) 
+  if (inputState == 3) {
       //Rotation finished, time to move forward to the goal
       distance_error = targetDistance - (leftSideDistance + rightSideDistance) / 2;
+      
       if (distance_error > 100) {
-        forward(100);
+        float headingError = desiredHeading - heading;
+
+        //Check whether right of left turn is closer if overlap has occured
+        if (headingError > 180) {
+          headingError -= 360;
+        } else if (headingError < -180) {
+          headingError += 360;
+        }
+        
+        //Implement P controller
+        float P_term = Kp * headingError; //This is the adjustment if rover is slightly heading to the left or right
+        int leftPWM = baseSpeed + P_term;
+        int rightPWM = baseSpeed - P_term;
+        forwardPID(leftPWM, rightPWM);
+
+        //forward(100);
       } else if (distance_error < -100) {
         backward(100);
       } else {

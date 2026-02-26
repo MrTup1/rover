@@ -4,6 +4,7 @@
 void motorsInit();
 
 void forward(int speed);
+void forwardPID(int leftSpeed, int rightSpeed);
 void backward(int speed);
 void stop();
 void leftturn(int speed);
