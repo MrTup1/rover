@@ -1,6 +1,12 @@
 #ifndef PINS_H
 #define PINS_H
 
+// button: 3 / second echo line??
+// servo 21
+
+// IMU tx: 17
+// IMU RX: 16
+
 // -------------------- esp32 pins -----------------
 // motors
 //motor 1 (front left)
@@ -19,15 +25,23 @@
 // encoders
 // (front left A and B enecoders)
 #define ENA_FL 14
-#define ENB_FL 27
+#define ENB_FL 35
 // (front right A and B enecoders)
-#define ENA_FR 32
-#define ENB_FR 35
+#define ENA_FR 39
+#define ENB_FR 36
 // (back left A and B enecoders)
 #define ENA_BL 4
-#define ENB_BL 16
+#define ENB_BL 5
 // (back right A and B enecoders)
 #define ENA_BR 22
 #define ENB_BR 23
+
+//ultrasonic sensors
+#define echoR 34
+#define echoL 3
+#define USR_TRIG 1
+#define USL_TRIG 32
+//lidar
+
 
 #endif

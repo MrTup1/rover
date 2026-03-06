@@ -65,19 +65,38 @@ const char webpage[] PROGMEM =
 "  justify-self:center;"
 "  align-self:center;"
 "}"
+// auto mode button.
+".autoBtn{"
+"  width:70px;"
+"  height:70px;"
+"  border-radius:20px;"
+"  transform:rotate(90deg);"
+"  transform-origin:center;"
+"  border:none;"
+"  color:white;"
+"  background:yellow;"
+"  font-weight:bold;"
+"}"
+
+".autoOn{ background:green; }"
 
 "</style>"
 "</head>"
 "<body>"
 
-// buttons
-"<div class='grid'>"
+// webpage grid
+"<div class='grid' id='driveControls'>"
+
 // row 1
 "<div></div>" // means empty space in 3x3 grid
 "<button class='btn' onmousedown='leftturn()' onmouseup='Stop()' "
 "ontouchstart='leftturn()' ontouchend='Stop()'></button>"
 "<div></div>"
-"<div></div>"
+"<div class='sideSpeed'>" 
+" left dis: <span id='leftDis'>0</span><br>"
+" forward dis: <span id='forwardDis'>0</span><br>"
+" Right dis: <span id='rightDis'>0</span><br>"
+"</div>"
 
 // row 2
 "<button class='btn' onmousedown='backwards()' onmouseup='Stop()' "
@@ -96,9 +115,14 @@ const char webpage[] PROGMEM =
 
 // row 4
 "<div></div>"
+"<div class='sideSpeed'>" 
+" PIDFL: <span id='dpwmFL'>0</span><br>"
+" PIDFR: <span id='dpwmFR'>0</span><br>"
+" PIDBL: <span id='dpwmBL'>0</span><br>"
+" PIDBR: <span id='dpwmBR'>0</span><br>"
+"</div>"
 "<div></div>"
-"<div></div>"
-"<div></div>"
+"<button class='autoBtn' onclick='toggleAuto()'>AUTO: OFF</button>"
 
 // row 5
 //slider
@@ -111,16 +135,24 @@ const char webpage[] PROGMEM =
 
 // row 6
 "<div></div>"
-"<div></div>"
-"<div></div>"
-"<div class='sideSpeed'>"
-"  <div>FL: <span id='fl'>0.0</span>&nbsp;&nbsp;FR: <span id='fr'>0.0</span></div>"
-"  <div>BL: <span id='bl'>0.0</span>&nbsp;&nbsp;BR: <span id='br'>0.0</span></div>"
+"<div class='sideSpeed'>" 
+" TargetSpeed: <span id='targetSpeed'>0</span><br>"
 "</div>"
+"<div class='sideSpeed'>" 
+" R-avg: <span id='rightside'>0</span>" " L-AVG: <span id='leftside'>0</span><br>"
+" FL: <span id='fl'>0</span>" " FR: <span id='fr'>0</span><br>" 
+" BL: <span id='bl'>0</span>" " BR: <span id='br'>0</span><br>"
+"</div>"
+// "<div class='sideSpeed'>" 
+// " Pitch: <span id='pitch'>0</span><br>"
+// "</div>"
+"<div></div>"
 
 "</div>"
 
 "<script>"
+
+// ----------------------------- Javascript ------------------------------------
 
 // speed update from scroller
 "function updateSpeed(val){"
@@ -168,12 +200,40 @@ const char webpage[] PROGMEM =
 "  fetch('/speeds')"
 "    .then(r => r.json())"
 "    .then(data => {"
+"      document.getElementById('leftDis').textContent  = data.leftDistance.toFixed(1);"
+"      document.getElementById('forwardDis').textContent  = data.frontDistance.toFixed(1);"
+"      document.getElementById('rightDis').textContent  = data.rightDistance.toFixed(1);"
+"      document.getElementById('dpwmFL').textContent  = data.PWMFL.toFixed(1);"
+"      document.getElementById('dpwmFR').textContent  = data.PWMFR.toFixed(1);"
+"      document.getElementById('dpwmBL').textContent  = data.PWMBL.toFixed(1);"
+"      document.getElementById('dpwmBR').textContent  = data.PWMBR.toFixed(1);"
+"      document.getElementById('targetSpeed').textContent  = data.TargetSpeed.toFixed(1);"
 "      document.getElementById('fl').textContent  = data.FL.toFixed(1);"
 "      document.getElementById('fr').textContent = data.FR.toFixed(1);"
 "      document.getElementById('bl').textContent  = data.BL.toFixed(1);"
 "      document.getElementById('br').textContent = data.BR.toFixed(1);"
+"      document.getElementById('rightside').textContent  = data.RIGHTAVG.toFixed(1);"
+"      document.getElementById('leftside').textContent = data.LEFTAVG.toFixed(1);"
+// "      document.getElementById('pitch').textContent = data.pitch.toFixed(1);"
 "    });"
 "}, 200);"
+
+//auto mode button 
+
+"function toggleAuto(){"
+"  fetch('/toggleAuto')"
+"    .then(response => response.text())"
+"    .then(state => {"
+"      const btn = document.querySelector('.autoBtn');"
+"      if(state === 'ON'){"
+"        btn.style.backgroundColor = 'green';"
+"        btn.textContent = 'AUTO: ON';"
+"      } else {"
+"        btn.style.backgroundColor = 'red';"
+"        btn.textContent = 'AUTO: OFF';"
+"      }"
+"    });"
+"}"
 
 "</script>"
 "</body></html>";

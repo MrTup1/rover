@@ -1,6 +1,10 @@
 #include <Arduino.h>
 #include "Motors.h"
 #include "Pins.h"
+#include "PID.h"
+
+extern bool moving;
+extern float targetSpeed;
 
 void motorsInit() {
   pinMode(DIR_FL, OUTPUT);
@@ -15,6 +19,8 @@ void motorsInit() {
 
 
 void forward(int speed) { //left and right side forward
+  moving = true;
+  targetSpeed = speed;
   digitalWrite(DIR_FR, LOW);
   analogWrite(PWM_FR, speed);
   digitalWrite(DIR_BL, LOW);   
@@ -25,6 +31,8 @@ void forward(int speed) { //left and right side forward
   analogWrite(PWM_FL, speed); //speed betwen 0min - 255max
 }
 void backward(int speed) { //left and right side backwards
+  moving = true;
+  targetSpeed = -speed;
   digitalWrite(DIR_FL, HIGH);   
   analogWrite(PWM_FL, speed); //speed betwen 0min - 255max
   digitalWrite(DIR_FR, HIGH);
@@ -35,12 +43,17 @@ void backward(int speed) { //left and right side backwards
   analogWrite(PWM_BR, speed);
 }
 void stop() { // both sides stopped
+  moving = false;
+  resetPID();
+  targetSpeed = 0;
   analogWrite(PWM_FL, 0);
   analogWrite(PWM_FR, 0);
   analogWrite(PWM_BL, 0);
   analogWrite(PWM_BR, 0);
 }
 void rightturn(int speed) { //left forward and right backwards
+  moving = false;
+  resetPID();
   digitalWrite(DIR_FL, LOW);   
   analogWrite(PWM_FL, speed); //speed betwen 0min - 255max
   digitalWrite(DIR_FR, HIGH);
@@ -51,6 +64,8 @@ void rightturn(int speed) { //left forward and right backwards
   analogWrite(PWM_BR, speed);
 }
 void leftturn(int speed) { // left backwards and right forward
+  moving = false;
+  resetPID();
   digitalWrite(DIR_FL, HIGH);   
   analogWrite(PWM_FL, speed); //speed betwen 0min - 255max
   digitalWrite(DIR_FR, LOW);
@@ -59,18 +74,4 @@ void leftturn(int speed) { // left backwards and right forward
   analogWrite(PWM_BL, speed); 
   digitalWrite(DIR_BR, LOW);
   analogWrite(PWM_BR, speed);
-}
-
-void updateleft(int speed) {
-  digitalWrite(DIR_FL, HIGH);   
-  analogWrite(PWM_FL, speed);
-  digitalWrite(DIR_BL, HIGH);   
-  analogWrite(PWM_BL, speed); 
-}
-
-void updateright(int speed) {
-  digitalWrite(DIR_FR, HIGH);   
-  analogWrite(PWM_FR, speed);
-  digitalWrite(DIR_BR, HIGH);   
-  analogWrite(PWM_BR, speed); 
 }

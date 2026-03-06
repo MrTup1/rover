@@ -1,12 +1,13 @@
 #include <Arduino.h>
 #include "Encoders.h"
 #include "Pins.h"
+#include "PID.h"
 
 // counts for calculation each motor speed
 volatile long encFL = 0, encFR = 0, encBL = 0, encBR = 0;
 long lastFL = 0, lastFR = 0, lastBL = 0, lastBR = 0;
 
-float fl = 0, fr = 0, bl = 0, br = 0;
+float fl = 0, fr = 0, bl = 0, br = 0, leftside = 0, rightside = 0;
 unsigned long lastSpeedTime = 0;
 
 // ---------------------------------- interupts --------------------------------------
@@ -70,5 +71,10 @@ void updateSpeeds() {
   lastBL = cBL;
   lastBR = cBR;
 
+  leftside = (fl + bl) / 2;
+  rightside = (fr + br) / 2;
+
   lastSpeedTime = millis();
+
+  updatePID();
 }
