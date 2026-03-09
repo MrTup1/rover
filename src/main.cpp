@@ -16,7 +16,7 @@ void setup() {
   
   motorsInit();
   encodersInit();
-  //IMU_init(); //This blocks anything until calibration is complete
+  IMU_init(); //This blocks anything until calibration is complete
     
   WiFi.softAP("ESP32-Group B rover", "Williscool");
 
@@ -28,7 +28,7 @@ void setup() {
 void loop() {
   server.handleClient(); // Listens for Web Page buttons
   updateSpeeds();        // Updates encoder math
-  //updateIMU();           // Updates Pitch/Roll/Heading
+  updateIMU();           // Updates Pitch/Roll/Heading
 
   if (abs(pitch) > 45 || abs(roll) > 45) {
       Serial.println("DANGER: TILT DETECTED!");

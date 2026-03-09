@@ -18,7 +18,7 @@ float accY = 0;
 float accZ = 0;
 
 void IMU_init() {
-  Wire.begin(21, 17); //Pin 21 is SDA, Pin 17 is SCL
+  Wire.begin(IMU_SDA, IMU_SCL); //Pin 21 is SDA, Pin 17 is SCL
   Serial.begin(115200);
   Serial.println("BNO055 Orientation Sensor Test");
 
