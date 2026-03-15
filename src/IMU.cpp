@@ -18,7 +18,10 @@ float accY = 0;
 float accZ = 0;
 
 void IMU_init() {
-  Wire.begin(IMU_SDA, IMU_SCL); //Pin 21 is SDA, Pin 17 is SCL
+  Wire.begin(IMU_SDA, IMU_SCL); //Pin 17 is SDA, Pin 16 is SCL
+  Wire.setClock(100000); // Forces standard 100kHz I2C speed
+  Wire.setTimeout(1000); // Tells ESP32 to wait longer before throwing Error 263
+  
   Serial.begin(115200);
   Serial.println("BNO055 Orientation Sensor Test");
 
@@ -38,14 +41,6 @@ void IMU_init() {
   uint8_t system, gyro, accel, mag;
   system = gyro = accel = mag = 0;
   
-  while(gyro < 3 || accel < 1) {
-    bno.getCalibration(&system, &gyro, &accel, &mag);
-    Serial.print ("\nG="); Serial.print(gyro);
-    Serial.print( "\nA="); Serial.print(accel);
-
-    delay(500);
-  }
-
   Serial.println("\n Calibration of BNO055 is complete!");
 }
 
