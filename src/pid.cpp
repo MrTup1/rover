@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include "PID.H"
-#include "Pins.h"
+#include "pid.h"
+#include "pins.h"
 #include "encoders.h"
 #include "motors.h"
 

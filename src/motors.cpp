@@ -1,6 +1,11 @@
 #include <Arduino.h>
 #include "motors.h"
 #include "pins.h"
+#include "pid.h"
+
+extern bool moving;
+extern float targetSpeed;
+
 
 void motorsInit() {
   pinMode(DIR_FL, OUTPUT);

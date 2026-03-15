@@ -1,4 +1,5 @@
 #include "TFluna.h"
+#include <Wire.h>
 
 
 TFLuna::TFLuna(uint8_t sda, uint8_t scl) {

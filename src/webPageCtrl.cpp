@@ -10,7 +10,8 @@ extern float dpwmFL, dpwmFR, dpwmBL, dpwmBR;
 extern float rightside, leftside;
 extern bool autoMode;
 extern volatile float frontDistance, leftDistance, rightDistance;
-extern float pitch;
+extern float fl, fr, bl, br;
+extern float roll;
 
 void setupWebServer(WebServer &server) {
   //starts the server
@@ -73,8 +74,7 @@ void setupWebServer(WebServer &server) {
     json += "\"BL\":" + String(bl,1) + ",";
     json += "\"BR\":" + String(br,1) + ",";
     json += "\"RIGHTAVG\":" + String(rightside,1) + ",";
-    json += "\"LEFTAVG\":" + String(leftside,1);
-    // json += "\"pitch\":" + String(pitch,1);
+    json += "\"LEFTAVG\":" + String(leftside,1) + ",";
     json += "\"Pitch\":" + String(roll,1); 
     json += "}";
     server.send(200, "application/json", json);

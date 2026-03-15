@@ -7,7 +7,7 @@
 #include "pins.h"
 
 // Create the sensor object with the correct Wire interface
-Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire);
+Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire1);
 
 // Define the global variables
 float heading = 0;
@@ -18,21 +18,20 @@ float accY = 0;
 float accZ = 0;
 
 void IMU_init() {
-  Wire.begin(IMU_SDA, IMU_SCL); //Pin 17 is SDA, Pin 16 is SCL
-  Wire.setClock(100000); // Forces standard 100kHz I2C speed
-  Wire.setTimeout(1000); // Tells ESP32 to wait longer before throwing Error 263
+  Wire1.begin(IMU_SDA, IMU_SCL); //Pin 17 is SDA, Pin 16 is SCL
+  Wire1.setClock(100000); // Forces standard 100kHz I2C speed
+  Wire1.setTimeout(1000); // Tells ESP32 to wait longer before throwing Error 263
   
-  Serial.begin(115200);
+
   Serial.println("BNO055 Orientation Sensor Test");
 
   /* Initialize the sensor */
   if (!bno.begin()) {
     Serial.print("No BNO055 detected ... Check your wiring or I2C ADDR!");
-    while (1);
+  } else {
+    delay(1000);
+    bno.setExtCrystalUse(true); //Use adafruit clock built into IMU
   }
-
-  delay(1000);
-  bno.setExtCrystalUse(true); //Use adafruit clock built into IMU
 
   /*IMU Calibration blocking loop
   Gyro: let IMU stay still for a few seconds. 

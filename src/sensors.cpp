@@ -1,11 +1,8 @@
 #include <Arduino.h>
-#include "Sensors.h"
-#include "Pins.h"
-#include "PID.h"
+#include "sensors.h"
+#include "pins.h"
+#include "pid.h"
 #include "TFluna.h"
-
-//IMU
-float pitch = 69;
 
 // distance measurments
 volatile float frontDistance = 0.0;

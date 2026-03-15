@@ -6,17 +6,26 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include "webPageCtrl.h"
+#include "sensors.h"
 
 WebServer server(80);
 int SPEED = 100;
+bool moving = false;
+float targetSpeed = 0;
+bool autoMode = false;
+
+#define lidarSCL 26
+#define lidarSDA 27
 unsigned long lastPrintTime = 0;
+\
+TFLuna tfLuna(lidarSDA, lidarSCL);
 
 void setup() {
   Serial.begin(115200);
   
   motorsInit();
   encodersInit();
-  IMU_init(); //This blocks anything until calibration is complete
+  //IMU_init(); //This blocks anything until calibration is complete
   sensorsInit();
   tfLuna.begin();
     
@@ -30,7 +39,7 @@ void setup() {
 void loop() {
   server.handleClient(); // Listens for Web Page buttons
   updateSpeeds();        // Updates encoder math
-  updateIMU();           // Updates Pitch/Roll/Heading
+  //updateIMU();           // Updates Pitch/Roll/Heading
   updateSensors();
 
   if (abs(pitch) > 60 || abs(roll) > 60) {
