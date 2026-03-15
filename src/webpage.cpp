@@ -88,9 +88,9 @@ const char webpage[] PROGMEM =
 "<div class='grid' id='driveControls'>"
 
 // row 1
-"<div></div>" // means empty space in 3x3 grid
+"<div></div>" 
 "<button class='btn' onmousedown='leftturn()' onmouseup='Stop()' "
-"ontouchstart='leftturn()' ontouchend='Stop()'></button>"
+"ontouchstart='event.preventDefault(); leftturn()' ontouchend='event.preventDefault(); Stop()'></button>"
 "<div></div>"
 "<div class='sideSpeed'>" 
 " left dis: <span id='leftDis'>0</span><br>"
@@ -100,16 +100,16 @@ const char webpage[] PROGMEM =
 
 // row 2
 "<button class='btn' onmousedown='backwards()' onmouseup='Stop()' "
-"ontouchstart='backwards()' ontouchend='Stop()'></button>"
+"ontouchstart='event.preventDefault(); backwards()' ontouchend='event.preventDefault(); Stop()'></button>"
 "<div></div>"
 "<button class='btn' onmousedown='forward()' onmouseup='Stop()' "
-"ontouchstart='forward()' ontouchend='Stop()'></button>"
+"ontouchstart='event.preventDefault(); forward()' ontouchend='event.preventDefault(); Stop()'></button>"
 "<div></div>"
 
 // row 3
 "<div></div>"
 "<button class='btn' onmousedown='rightturn()' onmouseup='Stop()' "
-"ontouchstart='rightturn()' ontouchend='Stop()'></button>"
+"ontouchstart='event.preventDefault(); rightturn()' ontouchend='event.preventDefault(); Stop()'></button>"
 "<div></div>"
 "<div></div>"
 
@@ -135,8 +135,11 @@ const char webpage[] PROGMEM =
 
 // row 6
 "<div></div>"
-"<div class='sideSpeed'>" 
-" TargetSpeed: <span id='targetSpeed'>0</span><br>"
+"<div></div>"
+"<div class='sideSpeed'>Pitch: <span id='pitch'>0.0</span>&deg;</div>"
+"<div class='sideSpeed'>"
+"  <div>FL: <span id='fl'>0.0</span>&nbsp;&nbsp;FR: <span id='fr'>0.0</span></div>"
+"  <div>BL: <span id='bl'>0.0</span>&nbsp;&nbsp;BR: <span id='br'>0.0</span></div>"
 "</div>"
 "<div class='sideSpeed'>" 
 " R-avg: <span id='rightside'>0</span>" " L-AVG: <span id='leftside'>0</span><br>"
@@ -183,6 +186,7 @@ const char webpage[] PROGMEM =
 "  fetch('/backwards');"
 "}"
 "function Stop(){ "
+"  if(!busy) return;"  //Ensures rover is actually moving, prevent overlaps
 "  busy = false;"
 "  fetch('/Stop');"
 "}"
@@ -193,8 +197,8 @@ const char webpage[] PROGMEM =
 "});"
 
 // release anywhere on page activates stop 
-"document.addEventListener('touchend', function(){ fetch('/Stop'); });"
-"document.addEventListener('mouseup', function(){ fetch('/Stop'); });"
+"document.addEventListener('touchend', function(){ Stop(); });" //removed fetch
+"document.addEventListener('mouseup', function(){ Stop(); });"
 
 "setInterval(() => {"
 "  fetch('/speeds')"
@@ -215,6 +219,7 @@ const char webpage[] PROGMEM =
 "      document.getElementById('rightside').textContent  = data.RIGHTAVG.toFixed(1);"
 "      document.getElementById('leftside').textContent = data.LEFTAVG.toFixed(1);"
 // "      document.getElementById('pitch').textContent = data.pitch.toFixed(1);"
+"      document.getElementById('pitch').textContent = data.Pitch.toFixed(1);"
 "    });"
 "}, 200);"
 

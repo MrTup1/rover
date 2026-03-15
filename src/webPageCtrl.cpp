@@ -1,7 +1,8 @@
-#include "WebPageCtrl.h"
-#include "WebPage.h"
-#include "Motors.h"
-#include "Encoders.h"
+#include "webPageCtrl.h"
+#include "webPage.h"
+#include "motors.h"
+#include "encoders.h"
+#include "IMU.h"
 
 extern int SPEED;
 extern float targetSpeed;
@@ -74,6 +75,7 @@ void setupWebServer(WebServer &server) {
     json += "\"RIGHTAVG\":" + String(rightside,1) + ",";
     json += "\"LEFTAVG\":" + String(leftside,1);
     // json += "\"pitch\":" + String(pitch,1);
+    json += "\"Pitch\":" + String(roll,1); 
     json += "}";
     server.send(200, "application/json", json);
   });

@@ -1,10 +1,6 @@
 #include <Arduino.h>
-#include "Motors.h"
-#include "Pins.h"
-#include "PID.h"
-
-extern bool moving;
-extern float targetSpeed;
+#include "motors.h"
+#include "pins.h"
 
 void motorsInit() {
   pinMode(DIR_FL, OUTPUT);
@@ -30,6 +26,24 @@ void forward(int speed) { //left and right side forward
   digitalWrite(DIR_FL, LOW);   
   analogWrite(PWM_FL, speed); //speed betwen 0min - 255max
 }
+
+void forwardPID(int leftSpeed, int rightSpeed) {
+  // Safety check: Keep PWM within 0-255
+  leftSpeed = constrain(leftSpeed, 0, 255);
+  rightSpeed = constrain(rightSpeed, 0, 255);
+
+  digitalWrite(DIR_FL, LOW);   
+  analogWrite(PWM_FL, leftSpeed); 
+  digitalWrite(DIR_BL, LOW);   
+  analogWrite(PWM_BL, leftSpeed); 
+
+  digitalWrite(DIR_FR, LOW);
+  analogWrite(PWM_FR, rightSpeed);
+  digitalWrite(DIR_BR, LOW);
+  analogWrite(PWM_BR, rightSpeed);
+}
+
+
 void backward(int speed) { //left and right side backwards
   moving = true;
   targetSpeed = -speed;

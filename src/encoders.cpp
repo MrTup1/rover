@@ -1,7 +1,6 @@
 #include <Arduino.h>
-#include "Encoders.h"
-#include "Pins.h"
-#include "PID.h"
+#include "encoders.h"
+#include "pins.h"
 
 // counts for calculation each motor speed
 volatile long encFL = 0, encFR = 0, encBL = 0, encBR = 0;
@@ -9,6 +8,11 @@ long lastFL = 0, lastFR = 0, lastBL = 0, lastBR = 0;
 
 float fl = 0, fr = 0, bl = 0, br = 0, leftside = 0, rightside = 0;
 unsigned long lastSpeedTime = 0;
+
+float distFL = 0, distFR = 0, distBL = 0, distBR = 0;
+float leftSideDistance = 0, rightSideDistance = 0;
+const float r = 60;
+const float tick_to_distance =   2 * PI * r / 2797;
 
 // ---------------------------------- interupts --------------------------------------
 
@@ -61,7 +65,7 @@ void updateSpeeds() {
   long cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
   interrupts();
 
-  fl = -(cFL - lastFL) * 0.5728;
+  fl = -(cFL - lastFL) * 0.5728; 
   fr =  (cFR - lastFR) * 0.5728;
   bl = -(cBL - lastBL) * 0.5728;
   br =  (cBR - lastBR) * 0.5728;
@@ -75,6 +79,45 @@ void updateSpeeds() {
   rightside = (fr + br) / 2;
 
   lastSpeedTime = millis();
+}
 
-  updatePID();
+void updateDistances() {
+
+  noInterrupts();
+  long totalFL = encFL;
+  long totalFR = encFR;
+  long totalBL = encBL;
+  long totalBR = encBR;
+  interrupts();
+
+  distFL = -(totalFL * tick_to_distance);
+  distFR = (totalFR * tick_to_distance);
+  distBL = -(totalBL * tick_to_distance);
+  distBR = (totalBR * tick_to_distance);
+
+  leftSideDistance = (distFL + distBL) / 2.0; //Average distance of the 2 left wheels
+  rightSideDistance = (distFR + distBR) / 2.0;
+}
+
+void resetEncoders() {
+  noInterrupts();
+  encFL = 0;
+  encFR = 0;
+  encBL = 0;
+  encBR = 0;
+  interrupts(); 
+
+  // reset last variables for updateSpeed function
+  lastFL = 0;
+  lastFR = 0;
+  lastBL = 0;
+  lastBR = 0;
+
+  // reset calculated distance for updateDistances function
+  distFL = 0;
+  distFR = 0;
+  distBL = 0;
+  distBR = 0;
+  leftSideDistance = 0;
+  rightSideDistance = 0;
 }
