@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "encoders.h"
 #include "pins.h"
+#include "IMU.h" 
 
 // counts for calculation each motor speed
 volatile long encFL = 0, encFR = 0, encBL = 0, encBR = 0;
@@ -11,8 +12,11 @@ unsigned long lastSpeedTime = 0;
 
 float distFL = 0, distFR = 0, distBL = 0, distBR = 0;
 float leftSideDistance = 0, rightSideDistance = 0;
-const float r = 60;
-const float tick_to_distance =   2 * PI * r / 2797;
+const float r = 76; // Size of big wheels
+const float tick_to_distance =   2 * PI * r / 700; // Check motor datasheet page 3
+long prevFL = 0, prevFR = 0, prevBL = 0, prevBR = 0; 
+float globalX = 0.0;
+float globalY = 0.0;
 
 // ---------------------------------- interupts --------------------------------------
 
@@ -89,7 +93,7 @@ void updateDistances() {
   long totalBL = encBL;
   long totalBR = encBR;
   interrupts();
-
+  
   distFL = -(totalFL * tick_to_distance);
   distFR = (totalFR * tick_to_distance);
   distBL = -(totalBL * tick_to_distance);
@@ -97,6 +101,32 @@ void updateDistances() {
 
   leftSideDistance = (distFL + distBL) / 2.0; //Average distance of the 2 left wheels
   rightSideDistance = (distFR + distBR) / 2.0;
+
+  //new version
+  long deltaFL = totalFL - prevFL;
+  long deltaFR = totalFR - prevFR;
+  long deltaBL = totalBL - prevBL;
+  long deltaBR = totalBR - prevBR;
+
+  float dFL_mm = -(deltaFL * tick_to_distance);
+  float dFR_mm = (deltaFR * tick_to_distance);
+  float dBL_mm = -(deltaBL * tick_to_distance);
+  float dBR_mm = (deltaBR * tick_to_distance);
+
+  float dLeft = (dFL_mm + dBL_mm) / 2.0; //Average distance of the 2 left wheels
+  float dright = (dFR_mm + dBR_mm) / 2.0;
+  float deltacenter = (dLeft + dright) / 2.0;
+
+  float heading_rad = heading * (PI / 180.0); // Convert IMU degrees to rad
+
+  globalX += deltacenter * cos(heading_rad);
+  globalY += deltacenter * sin(heading_rad);
+
+  prevFL = totalFL;
+  prevFR = totalFR;
+  prevBL = totalBL;
+  prevBR = totalBR;
+
 }
 
 void resetEncoders() {
@@ -120,4 +150,7 @@ void resetEncoders() {
   distBR = 0;
   leftSideDistance = 0;
   rightSideDistance = 0;
+
+  globalX = 0.0;
+  globalY = 0.0;
 }

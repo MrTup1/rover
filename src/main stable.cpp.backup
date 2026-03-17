@@ -7,6 +7,7 @@
 #include <WebServer.h>
 #include "webPageCtrl.h"
 #include "sensors.h"
+#include  "obstacleAvoidance.h"
 
 WebServer server(80);
 int SPEED = 100;
@@ -17,40 +18,41 @@ bool autoMode = false;
 #define lidarSCL 26
 #define lidarSDA 27
 unsigned long lastPrintTime = 0;
-\
 TFLuna tfLuna(lidarSDA, lidarSCL);
 
 void setup() {
-  Serial.begin(115200);
+Serial.begin(115200);
+  delay(1000);
+  Serial.println("Starting Boot Sequence...");
   
   motorsInit();
+  Serial.println("Motors Initialized");
+  
   encodersInit();
-  //IMU_init(); //This blocks anything until calibration is complete
+  Serial.println("Encoders Initialized");
+
+  IMU_init(); 
+  Serial.println("IMU Initialized");
+  
   sensorsInit();
+  Serial.println("Ultrasonic Sensors Initialized");
+  
   tfLuna.begin();
+  Serial.println("LiDAR Initialized");
     
   WiFi.softAP("ESP32-Group B rover", "Williscool");
-
   setupWebServer(server);
   server.begin();
+  
+  Serial.println("Setup Complete! Entering Loop...");
 }
 
 
 void loop() {
   server.handleClient(); // Listens for Web Page buttons
   updateSpeeds();        // Updates encoder math
-  //updateIMU();           // Updates Pitch/Roll/Heading
+  updateIMU();           // Updates Pitch/Roll/Heading
   updateSensors();
 
-  if (abs(pitch) > 60 || abs(roll) > 60) {
-      Serial.println("DANGER: TILT DETECTED!");
-      stop();
-  }
-  
-  if (millis() - lastPrintTime >= 500) {
-    Serial.print("Roll: "); 
-    Serial.println(roll);
-    
-    lastPrintTime = millis(); // Reset the stopwatch
-  }
+
 }

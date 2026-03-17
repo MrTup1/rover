@@ -12,6 +12,11 @@ extern bool autoMode;
 extern volatile float frontDistance, leftDistance, rightDistance;
 extern float fl, fr, bl, br;
 extern float roll;
+extern float targetDistance;
+extern float targetAngle;
+extern float desiredHeading;
+extern int inputState;
+extern bool promptPrinted;
 
 void setupWebServer(WebServer &server) {
   //starts the server
@@ -78,6 +83,23 @@ void setupWebServer(WebServer &server) {
     json += "\"Pitch\":" + String(roll,1); 
     json += "}";
     server.send(200, "application/json", json);
+  });
+
+  server.on("/setTarget", [&server](){
+    if (!server.hasArg("angle") || !server.hasArg("dist")) {
+      server.send(400, "text/plain", "Missing angle or dist parameter");
+      return;
+    }
+    if (inputState == 2 || inputState == 3) {
+      server.send(503, "text/plain", "Rover is already moving to a target");
+      return;
+    }
+    targetAngle    = server.arg("angle").toFloat();
+    targetDistance = server.arg("dist").toFloat();
+    desiredHeading = targetAngle + heading; // translate to IMU-relative heading
+    inputState = 2; // jump straight to turning phase
+    server.send(200, "text/plain",
+      "Target set: " + String(targetDistance,1) + " mm at " + String(targetAngle,1) + " deg");
   });
 
   //update auto mode

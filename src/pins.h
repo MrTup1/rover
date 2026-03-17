@@ -41,10 +41,10 @@
 #define IMU_SCL 16
 
 //ultrasonic sensors
-#define echoR 34
-#define echoL 3
+#define echo 34
 #define USR_TRIG 1
 #define USL_TRIG 32
+
 //lidar
 #define lidarTX 26
 #define lidarRX 27
