@@ -5,6 +5,7 @@
 
 extern bool moving;
 extern float targetSpeed;
+extern float heading;
 
 
 void motorsInit() {
@@ -93,4 +94,31 @@ void leftturn(int speed) { // left backwards and right forward
   analogWrite(PWM_BL, speed); 
   digitalWrite(DIR_BR, LOW);
   analogWrite(PWM_BR, speed);
+}
+
+//INPUT IS A TARGET HEADNG
+bool turnDegrees(float targetHeading) { //RIGHT TURN IS POSITIVE, LEFT IS NEGATIVE, returns true when finish turning
+    if (targetHeading >= 360.0) targetHeading -= 360.0;
+    if (targetHeading < 0.0) targetHeading += 360.0;
+
+    float error = targetHeading - heading; //constantly checking
+
+    //Check whether right of left turn is closer if overlap has occured
+    if (error > 180) {
+      error -= 360;
+    } else if (error < -180) {
+      error += 360;
+    }
+
+    //Right turn is positive, left turn is negative
+    if (error > 2.0) {
+      rightturn(100);
+      return false;
+    } else if (error < -2.0) {
+      leftturn(100);
+      return false;
+    } else {
+      stop();
+      return true;
+    }
 }

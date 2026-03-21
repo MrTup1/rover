@@ -158,12 +158,16 @@ const char webpage[] PROGMEM = R"html(
   <div class='speedLabel'>Speed: <span id='speedValue'>100</span></div>
 
 
-    <div >    
-    </div>
+  <div class = 'sideSpeed' >
+    Global X: <span id='globalX'>0</span><br>
+    Global Y: <span id='globalY'>0</span><br>
+  </div>
   <div class='sideSpeed'>
     TargetSpeed: <span id='targetSpeed'>0</span><br>
   </div>
-  <div></div>
+  <div class = 'sideSpeed'>
+    Destination Reached: <span id = 'destinationReached'>false</span><br>
+  </div>
   <div class='sideSpeed'>
     Pitch: <span id='pitch'>0</span><br>
   </div>
@@ -261,6 +265,9 @@ const char webpage[] PROGMEM = R"html(
         document.getElementById('leftside').textContent = data.LEFTAVG.toFixed(1);
         // document.getElementById('pitch').textContent = data.pitch.toFixed(1);
         document.getElementById('pitch').textContent = data.Pitch.toFixed(1);
+        document.getElementById('destinationReached').textContent = data.destinationReached.toFixed(1);
+        document.getElementById('globalX').textContent = data.globalX.toFixed(1);
+        document.getElementById('globalY').textContent = data.globalY.toFixed(1);
       });
   }, 200);
 

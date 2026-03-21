@@ -17,6 +17,8 @@ extern float targetAngle;
 extern float desiredHeading;
 extern int inputState;
 extern bool promptPrinted;
+extern bool destinationReached;
+extern float globalX, globalY;
 
 void setupWebServer(WebServer &server) {
   //starts the server
@@ -80,7 +82,10 @@ void setupWebServer(WebServer &server) {
     json += "\"BR\":" + String(br,1) + ",";
     json += "\"RIGHTAVG\":" + String(rightside,1) + ",";
     json += "\"LEFTAVG\":" + String(leftside,1) + ",";
-    json += "\"Pitch\":" + String(roll,1); 
+    json += "\"Pitch\":" + String(roll,1)+ ","; 
+    json += "\"destinationReached\":" + String(destinationReached) + ","; 
+    json += "\"globalX\":" + String(globalX) + ","; 
+    json += "\"globalY\":" + String(globalY); 
     json += "}";
     server.send(200, "application/json", json);
   });
