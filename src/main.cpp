@@ -37,6 +37,10 @@ bool wallFar;
 bool edgeDetected;    //Whether a corner of a box has been reached
 float edgeDetectedAt; //Snapshot of distance when edge has been detected
 
+//STATE 5 VARIABLES
+unsigned long openSpaceStart = 0; 
+const int OPEN_SPACE_TIME_MS = 300; // 300ms of consistent open space
+
 //P controller heading variables
 static float Kp = 0.6;
 int baseSpeed = 50;
@@ -168,43 +172,46 @@ void loop() {
     if (turnDegrees(avoidTargetHeading)) {
       edgeDetected = false;             //reset flag variables
       obstacleLocationLogged = false;
+      openSpaceStart = 0;
       stop();
-      if (turnAngle == -90.0f) { //Ensure state 5 doesnt terminate immediately
-          previousSideDistance = rightDistance;
-      } else {
-          previousSideDistance = leftDistance;
-      } 
       inputState = 5;
     } 
   }
 
-  // Go forward until path is clear
 
   if (inputState == 5) { 
+    // STEP 1: Go forward until path is clear on closer ultrasonic
 
-    if (turnAngle == -90.0f) { //This means the right ultrasonic is closer to the obstacle
-      if ((rightDistance > 0 && rightDistance < 50))
-      
-      if ((rightDistance - previousSideDistance) > 40) {
-        edgeDetected = true;
-      } else {
-        forward(baseSpeed);
-      }
-      previousSideDistance = rightDistance;
-
-    } else if (turnAngle == 90.0f) {
-      if ((leftDistance - previousSideDistance) > 40) {
-        edgeDetected = true;
-      } else {
-        forward(baseSpeed);
-      }
-      previousSideDistance = leftDistance;
+    bool sideClear = false;
+    if (turnAngle == -90.0f) { //Turn left so right side is closer to wall
+      sideClear = (rightDistance < 0.0 || rightDistance > 200);
+    } else if (turnAngle == 90.0f) { 
+      sideClear = (leftDistance < 0.0 || leftDistance > 200);
     }
 
+    if (!edgeDetected) { //Detect continuous ultrasonic readings with open space
+        if (sideClear) {
+            if (openSpaceStart == 0) {
+                openSpaceStart = millis();
+                forward(baseSpeed);
+            } else if (millis() - openSpaceStart > OPEN_SPACE_TIME_MS) { //read 3 cont
+                edgeDetected = true;
+            } else {
+                forward(baseSpeed);
+            }
+        } else {
+            openSpaceStart = 0;
+            forward(baseSpeed);
+        }
+    }
+    
+    // Detect location of obstacle for STEP 2
     if (edgeDetected == true && obstacleLocationLogged == false) {
       edgeDetectedAt = (leftSideDistance + rightSideDistance) / 2.0f;
       obstacleLocationLogged = true;
     }
+    
+    // STEP 2: Go forward additional distance to ensure rover has enough turning space
 
     if (edgeDetected == true) {
       float distance_covered = (leftSideDistance + rightSideDistance) / 2.0f - edgeDetectedAt;
@@ -228,4 +235,4 @@ void loop() {
   }
   
 
-} 
+}  
