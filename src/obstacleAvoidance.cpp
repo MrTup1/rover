@@ -23,7 +23,11 @@ bool check_Obstacle() {
     return false; // Default case
 }
 
-void autoMode() {
+void resetAutoMode() {
+    autoModeState = 0; // Reset state so it starts fresh next time
+}
+
+void runAutoMode() {
     if (autoModeState == 0) {
         if (check_Obstacle()) {
             stop();

@@ -31,6 +31,7 @@ bool moving = false;
 bool autoMode = false;
 bool destinationReached = false;
 bool obstacleLocationLogged = false;
+bool wasAutoMode = false;
 
 bool wallClose;
 bool wallFar;
@@ -81,158 +82,140 @@ void loop() {
       stop();
   }
 
-  if (inputState == 2) { //target angle and distance given
-    destinationReached = false;
-
-    if (turnDegrees(desiredHeading)) {
-      resetEncoders();
-      inputState = 3;
-    }
-  }
-  /*
-  if (inputState == 3) {
-      //Rotation finished, time to move forward to the goal
-      if (check_Obstacle()) { //Temporary, prevent rover crashing into objects
-        stop();
-        inputState = 0; // Go all the way back to waiting for a new Serial input
-      } else {
-        distance_error = targetDistance - (leftSideDistance + rightSideDistance) / 2;
-        
-        if (distance_error > 100) {
-          float headingError = desiredHeading - heading;
-
-          //Check whether right of left turn is closer if overlap has occured
-          if (headingError > 180) {
-            headingError -= 360;
-          } else if (headingError < -180) {
-            headingError += 360;
-          }
-          
-          //Implement P controller
-          float P_term = Kp * headingError; //This is the adjustment if rover is slightly heading to the left or right
-          int leftPWM = baseSpeed + P_term;
-          int rightPWM = baseSpeed - P_term;
-          forwardPID(leftPWM, rightPWM);
-
-          //forward(100);
-        } else if (distance_error < -100) {
-          backward(100);
-        } else {
-          stop();
-          destinationReached = true;
-          inputState = 0; // Go all the way back to waiting for a new Serial input
-        }
-      }
-  }*/
-
-  if (inputState == 3) {
-      //Rotation finished, time to move forward to the goal
-      distance_error = sqrt((pow((targetDistance - globalX) , 2) + pow((globalY) , 2)));
-      
-      if (distance_error < 50) {
-        stop();
-        destinationReached = true;
-        inputState = 0; // Go all the way back to waiting for a new Serial input
-      }
-
-      else if (frontDistance > 0 && frontDistance < 30) {
-        stop();
-        //Object detected directly in front of rover
-        if (leftDistance > rightDistance) {
-          turnAngle = -90.0f;
-        } else if (rightDistance > leftDistance) {
-          turnAngle = 90.0f;
-        }
-
-        avoidTargetHeading = heading + turnAngle;
-        inputState = 4;
-      }
-
-      else if (distance_error > 100) {
-        float headingError = desiredHeading - heading;
-
-        //Check whether right of left turn is closer if overlap has occured
-        if (headingError > 180) {
-          headingError -= 360;
-        } else if (headingError < -180) {
-          headingError += 360;
-        }
-        
-        //Implement P controller
-        float P_term = Kp * headingError; //This is the adjustment if rover is slightly heading to the left or right
-        int leftPWM = baseSpeed + P_term;
-        int rightPWM = baseSpeed - P_term;
-        forwardPID(leftPWM, rightPWM);
-      }
-  }
-  
-  //Turn 90 degrees away from obstacle
-
-  if (inputState == 4) { 
-    if (turnDegrees(avoidTargetHeading)) {
-      edgeDetected = false;             //reset flag variables
-      obstacleLocationLogged = false;
-      openSpaceStart = 0;
+  if (autoMode) {
+    runAutoMode();
+    wasAutoMode = true;
+  } else {
+    if (wasAutoMode) { // Ensures stop command only runs once
       stop();
-      inputState = 5;
-    } 
-  }
-
-
-  if (inputState == 5) { 
-    // STEP 1: Go forward until path is clear on closer ultrasonic
-
-    bool sideClear = false;
-    if (turnAngle == -90.0f) { //Turn left so right side is closer to wall
-      sideClear = (rightDistance < 0.0 || rightDistance > 200);
-    } else if (turnAngle == 90.0f) { 
-      sideClear = (leftDistance < 0.0 || leftDistance > 200);
+      resetAutoMode();
+      wasAutoMode = false;
     }
 
-    if (!edgeDetected) { //Detect continuous ultrasonic readings with open space
-        if (sideClear) {
-            if (openSpaceStart == 0) {
-                openSpaceStart = millis();
-                forward(baseSpeed);
-            } else if (millis() - openSpaceStart > OPEN_SPACE_TIME_MS) { //read 3 cont
-                edgeDetected = true;
+
+    /// --- AUTONOMOUS FROM POINT A TO B LOGIC --- ///
+
+
+    if (inputState == 2) { //target angle and distance given
+        destinationReached = false;
+
+        if (turnDegrees(desiredHeading)) {
+          resetEncoders();
+          inputState = 3;
+        }
+      }
+
+      if (inputState == 3) {
+          //Rotation finished, time to move forward to the goal
+          distance_error = sqrt((pow((targetDistance - globalX) , 2) + pow((globalY) , 2)));
+          
+          if (distance_error < 50) {
+            stop();
+            destinationReached = true;
+            inputState = 0; // Go all the way back to waiting for a new Serial input
+          }
+
+          else if (frontDistance > 0 && frontDistance < 30) {
+            stop();
+            //Object detected directly in front of rover
+            if (leftDistance > rightDistance) {
+              turnAngle = -90.0f;
+            } else if (rightDistance > leftDistance) {
+              turnAngle = 90.0f;
+            }
+
+            avoidTargetHeading = heading + turnAngle;
+            inputState = 4;
+          }
+
+          else if (distance_error > 100) {
+            float headingError = desiredHeading - heading;
+
+            //Check whether right of left turn is closer if overlap has occured
+            if (headingError > 180) {
+              headingError -= 360;
+            } else if (headingError < -180) {
+              headingError += 360;
+            }
+            
+            //Implement P controller
+            float P_term = Kp * headingError; //This is the adjustment if rover is slightly heading to the left or right
+            int leftPWM = baseSpeed + P_term;
+            int rightPWM = baseSpeed - P_term;
+            forwardPID(leftPWM, rightPWM);
+          }
+      }
+      
+      //Turn 90 degrees away from obstacle
+
+      if (inputState == 4) { 
+        if (turnDegrees(avoidTargetHeading)) {
+          edgeDetected = false;             //reset flag variables
+          obstacleLocationLogged = false;
+          openSpaceStart = 0;
+          stop();
+          inputState = 5;
+        } 
+      }
+
+
+      if (inputState == 5) { 
+        // STEP 1: Go forward until path is clear on closer ultrasonic
+
+        bool sideClear = false;
+        if (turnAngle == -90.0f) { //Turn left so right side is closer to wall
+          sideClear = (rightDistance < 0.0 || rightDistance > 200);
+        } else if (turnAngle == 90.0f) { 
+          sideClear = (leftDistance < 0.0 || leftDistance > 200);
+        }
+
+        if (!edgeDetected) { //Detect continuous ultrasonic readings with open space
+            if (sideClear) {
+                if (openSpaceStart == 0) {
+                    openSpaceStart = millis();
+                    forward(baseSpeed);
+                } else if (millis() - openSpaceStart > OPEN_SPACE_TIME_MS) { //read 3 cont
+                    edgeDetected = true;
+                } else {
+                    forward(baseSpeed);
+                }
             } else {
+                openSpaceStart = 0;
                 forward(baseSpeed);
             }
-        } else {
-            openSpaceStart = 0;
-            forward(baseSpeed);
         }
-    }
-    
-    // Detect location of obstacle for STEP 2
-    if (edgeDetected == true && obstacleLocationLogged == false) {
-      edgeDetectedAt = (leftSideDistance + rightSideDistance) / 2.0f;
-      obstacleLocationLogged = true;
-    }
-    
-    // STEP 2: Go forward additional distance to ensure rover has enough turning space
+        
+        // Detect location of obstacle for STEP 2
+        if (edgeDetected == true && obstacleLocationLogged == false) {
+          edgeDetectedAt = (leftSideDistance + rightSideDistance) / 2.0f;
+          obstacleLocationLogged = true;
+        }
+        
+        // STEP 2: Go forward additional distance to ensure rover has enough turning space
 
-    if (edgeDetected == true) {
-      float distance_covered = (leftSideDistance + rightSideDistance) / 2.0f - edgeDetectedAt;
-      if (distance_covered < ROVER_LENGTH) {
-        forward(baseSpeed);
-      } else {
-        stop();
-        inputState = 6;
+        if (edgeDetected == true) {
+          float distance_covered = (leftSideDistance + rightSideDistance) / 2.0f - edgeDetectedAt;
+          if (distance_covered < ROVER_LENGTH) {
+            forward(baseSpeed);
+          } else {
+            stop();
+            inputState = 6;
+          }
+        }
       }
-    }
+
+      // Reangle itself towards target
+
+      if (inputState == 6) { 
+        float rad = atan2(-globalY, (targetDistance - globalX)); //Get angle from odometry virtual plane
+        desiredHeading = (rad * (180 / PI)) + startHeading;      //Convert odometry into real IMU data
+        if (turnDegrees(desiredHeading)) {
+          inputState = 3;
+        };
+      }
   }
 
-  // Reangle itself towards target
-
-  if (inputState == 6) { 
-    float rad = atan2(-globalY, (targetDistance - globalX)); //Get angle from odometry virtual plane
-    desiredHeading = (rad * (180 / PI)) + startHeading;      //Convert odometry into real IMU data
-    if (turnDegrees(desiredHeading)) {
-      inputState = 3;
-    };
-  }
+  
   
 
 }  
