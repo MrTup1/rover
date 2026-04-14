@@ -14,5 +14,7 @@ extern float accZ;
 // Functions
 void IMU_init();
 void updateIMU();
+void updateHeading();
+void updateAccel();
 
 #endif

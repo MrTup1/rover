@@ -48,6 +48,12 @@ int baseSpeed = 50;
 
 bool promptPrinted = false; // Ensures we only print the prompt once
 
+// CRASH CHECK
+static unsigned long last_IMU_check = 0;
+const float CRASH_THRESHOLD = 15.0; // TUNE THIS
+unsigned long crashStart = 0; 
+
+
 #define lidarSCL 26
 #define lidarSDA 27
 TFLuna tfLuna(lidarSDA, lidarSCL);
@@ -73,13 +79,36 @@ void loop() {
   server.handleClient(); // Listens for Web Page buttons
   updateSpeeds();        // Updates encoder math
   updateDistances();     // Updates encoder distance
-  updateIMU();           // Updates Pitch/Roll/Heading
   updateSensors();
 
-  
+  // --- SLOPE DETECTION --- //
   if (abs(pitch) > 45 || abs(roll) > 45) {
       Serial.println("DANGER: TILT DETECTED!");
       stop();
+  }
+
+  // --- CRASH DETECTION --- //
+
+  if (millis() - last_IMU_check >= 10) { 
+      last_IMU_check = millis();
+      updateIMU();           // Updates Pitch/Roll/Heading
+
+      float shockMagnitude = sqrt(accX * accX + 
+                                  accY * accY + 
+                                  accZ * accZ);
+
+      if (shockMagnitude > CRASH_THRESHOLD) {
+          if (crashStart == 0) {
+            crashStart = millis();
+          } else if (millis() - crashStart >= 30) {
+            stop();
+            autoMode = false;  // Kick it out of auto mode
+            inputState = 0;   // Put it in manual mode
+            crashStart = 0;   // Reset timer
+          } else {
+            crashStart = 0;   // Reset timer, above threshold not continous 
+          }
+      }
   }
 
   if (autoMode) {
