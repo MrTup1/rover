@@ -5,12 +5,12 @@
 #include "motors.h"
 #include "IMU.h"
 
+extern int baseSpeed;
+
 int stopDistance = 20;
 int autoModeState = 0;
 float savedLeftDistance = 0;
 float savedrightDistance = 0;
-
-int baseSpeed = 50;
 float newHeading = 0.0f;
 
 bool check_Obstacle() {
@@ -41,7 +41,7 @@ void runAutoMode() {
                 newHeading = heading + 180.0f;
             } else if (leftCompare >= rightCompare && leftCompare > 40) {  // Turn left
                 autoModeState = 1;
-                newHeading = heading - 30.0f;
+                newHeading = heading - 30.0f; // Rover ultrasonics are angled 30 degrees from the center 
             } else { // Rover must be more open towards the right, turn regardless
                 autoModeState = 1;
                 newHeading = heading + 30.0f;

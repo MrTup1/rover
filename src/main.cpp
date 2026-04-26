@@ -12,7 +12,7 @@
 
 WebServer server(80);
 int SPEED = 100;
-int ROVER_LENGTH = 300;
+int ROVER_LENGTH = 420; 
 unsigned long lastPrintTime = 0;
 String receivedMessage = ""; 
 int inputState = 0; // 0 = Wait for Distance Input, 1 = Wait for Angle Input, 2 = Automative state
@@ -151,13 +151,15 @@ void loop() {
               turnAngle = -90.0f;
             } else if (rightDistance > leftDistance) {
               turnAngle = 90.0f;
+            } else {
+              turnAngle = 90.0f; // default to turn right if both sides have equal distance
             }
 
             avoidTargetHeading = heading + turnAngle;
             inputState = 4;
           }
 
-          else if (distance_error > 100) {
+          else {
             float headingError = desiredHeading - heading;
 
             //Check whether right of left turn is closer if overlap has occured
