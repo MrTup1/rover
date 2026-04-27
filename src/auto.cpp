@@ -4,6 +4,7 @@
 #include "sensors.h"
 #include "IMU.h"
 
+int SPEED = 90;
 int minDistance = 60;
 int minSideDistance = 60;
 int turnAngle = 115;
