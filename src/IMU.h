@@ -10,11 +10,19 @@ extern float roll;
 extern float accX;
 extern float accY;
 extern float accZ;
+extern float startHeading;
+
+// Auto Mode variables
+extern float startHeading;
+extern float currentHeading;
+extern float Direction;
 
 // Functions
 void IMU_init();
 void updateIMU();
 void updateHeading();
 void updateAccel();
+void setStartHeading(); 
+float imuServoRead();   
 
 #endif

@@ -2,8 +2,9 @@
 #define ENCODERS_H
 
 extern float fl, fr, bl, br;
-
+extern volatile long encFL, encFR, encBL, encBR;
 extern float distFL, distFR, distBL, distBR;
+extern long elapsedTime;
 
 extern float leftSideDistance, rightSideDistance;
 extern float globalX, globalY;

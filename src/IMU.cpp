@@ -17,6 +17,12 @@ float accX = 0;
 float accY = 0;
 float accZ = 0;
 
+// Auto Mode Variables
+float startHeading = 0;
+float currentHeading = 0;
+float Direction = 0;
+
+
 void IMU_init() {
   Wire1.begin(IMU_SDA, IMU_SCL); //Pin 17 is SDA, Pin 16 is SCL
   Wire1.setClock(100000); // Forces standard 100kHz I2C speed
@@ -43,6 +49,18 @@ void IMU_init() {
   Serial.println("\n Calibration of BNO055 is complete!");
 }
 
+void setStartHeading() {
+  sensors_event_t event;
+  bno.getEvent(&event);
+  startHeading = event.orientation.x;
+}
+
+float imuServoRead(){
+  sensors_event_t event;
+  bno.getEvent(&event);
+  return (float)event.orientation.z;
+}
+
 void updateIMU() {
     // Get Orientation Data (Euler Angles)
   sensors_event_t event;
@@ -51,6 +69,18 @@ void updateIMU() {
   heading = event.orientation.x;
   pitch = event.orientation.y;
   roll = event.orientation.z;
+
+  // Update auto mode variables (merged from old updatePosition)
+  currentHeading = event.orientation.x;
+  Direction = currentHeading - startHeading; // calculates relative position
+
+  // Maps to 0 - 360 degrees
+  if (Direction < 0) {
+    Direction += 360;
+  }
+  if (Direction >= 360) {
+    Direction -= 360;
+  }
 
   imu::Vector<3> linearaccel = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
   accX = linearaccel.x();

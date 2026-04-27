@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "sensors.h"
 #include "pins.h"
-#include "pid.h"
+#include "PID.h"
 #include "TFluna.h"
 
 // Distance measurements

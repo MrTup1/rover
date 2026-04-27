@@ -1,10 +1,14 @@
 #include <Arduino.h>
 #include "motors.h"
 #include "pins.h"
-#include "pid.h"
+#include "PID.h"
+#include "auto.h"
 
-extern bool moving;
-extern float targetSpeed;
+bool moving = false;
+float targetSpeed = 0;
+float lefttargetSpeed = 0;
+float righttargetspeed = 0;
+
 extern float heading;
 
 
@@ -21,79 +25,76 @@ void motorsInit() {
 
 
 void forward(int speed) { //left and right side forward
+  motionState = FORWARD;
   moving = true;
   targetSpeed = speed;
-  digitalWrite(DIR_FR, LOW);
-  analogWrite(PWM_FR, speed);
-  digitalWrite(DIR_BL, LOW);   
-  analogWrite(PWM_BL, speed); 
-  digitalWrite(DIR_BR, LOW);
-  analogWrite(PWM_BR, speed);
-  digitalWrite(DIR_FL, LOW);   
-  analogWrite(PWM_FL, speed); //speed betwen 0min - 255max
+  lefttargetSpeed = speed;
+  righttargetspeed = speed;
 }
-
-void forwardPID(int leftSpeed, int rightSpeed) {
-  // Safety check: Keep PWM within 0-255
-  leftSpeed = constrain(leftSpeed, 0, 255);
-  rightSpeed = constrain(rightSpeed, 0, 255);
-
-  digitalWrite(DIR_FL, LOW);   
-  analogWrite(PWM_FL, leftSpeed); 
-  digitalWrite(DIR_BL, LOW);   
-  analogWrite(PWM_BL, leftSpeed); 
-
-  digitalWrite(DIR_FR, LOW);
-  analogWrite(PWM_FR, rightSpeed);
-  digitalWrite(DIR_BR, LOW);
-  analogWrite(PWM_BR, rightSpeed);
-}
-
 
 void backward(int speed) { //left and right side backwards
+  motionState = BACKWARDS;
   moving = true;
   targetSpeed = -speed;
-  digitalWrite(DIR_FL, HIGH);   
-  analogWrite(PWM_FL, speed); //speed betwen 0min - 255max
-  digitalWrite(DIR_FR, HIGH);
-  analogWrite(PWM_FR, speed);
-  digitalWrite(DIR_BL, HIGH);   
-  analogWrite(PWM_BL, speed); 
-  digitalWrite(DIR_BR, HIGH);
-  analogWrite(PWM_BR, speed);
+  lefttargetSpeed = -speed;
+  righttargetspeed = -speed;
 }
+
 void stop() { // both sides stopped
+  motionState = STOPPED;
   moving = false;
-  resetPID();
   targetSpeed = 0;
-  analogWrite(PWM_FL, 0);
-  analogWrite(PWM_FR, 0);
-  analogWrite(PWM_BL, 0);
-  analogWrite(PWM_BR, 0);
+  lefttargetSpeed = 0;
+  righttargetspeed = 0;
 }
+
 void rightturn(int speed) { //left forward and right backwards
+  motionState = RIGHTTURN;
   moving = false;
-  resetPID();
-  digitalWrite(DIR_FL, LOW);   
-  analogWrite(PWM_FL, speed); //speed betwen 0min - 255max
-  digitalWrite(DIR_FR, HIGH);
-  analogWrite(PWM_FR, speed);
-  digitalWrite(DIR_BL, LOW);   
-  analogWrite(PWM_BL, speed); 
-  digitalWrite(DIR_BR, HIGH);
-  analogWrite(PWM_BR, speed);
+  lefttargetSpeed = speed;
+  righttargetspeed = -speed;
 }
+
 void leftturn(int speed) { // left backwards and right forward
+  motionState = LEFTTURN;
   moving = false;
-  resetPID();
-  digitalWrite(DIR_FL, HIGH);   
-  analogWrite(PWM_FL, speed); //speed betwen 0min - 255max
-  digitalWrite(DIR_FR, LOW);
-  analogWrite(PWM_FR, speed);
-  digitalWrite(DIR_BL, HIGH);   
-  analogWrite(PWM_BL, speed); 
-  digitalWrite(DIR_BR, LOW);
-  analogWrite(PWM_BR, speed);
+  lefttargetSpeed = -speed;
+  righttargetspeed = speed;
+}
+
+void forwardleftturn(int speed) { // left backwards and right forward
+  motionState = FORWARDLEFT;
+  moving = true;
+  targetSpeed = speed;
+  lefttargetSpeed = speed / 2.0;
+  righttargetspeed = (speed);
+}
+void forwardrightturn(int speed) { //left forward and right backwards
+  motionState = FORWARDRIGHT;
+  moving = true;
+  targetSpeed = speed;
+  lefttargetSpeed = speed;
+  righttargetspeed = (speed) / 2.0;
+}
+void backwardsleftturn(int speed) { // left backwards and right forward
+  motionState = BACKWARDSLEFT;
+  moving = true;
+  targetSpeed = -speed;
+  lefttargetSpeed = -speed / 2.0;
+  righttargetspeed = -speed;
+}
+void backwardsrightturn(int speed) { //left forward and right backwards
+  motionState = BACKWARDSRIGHT;
+  moving = true;
+  targetSpeed = -speed;
+  lefttargetSpeed = -speed;
+  righttargetspeed = (-speed) / 2.0;
+}
+
+void steer(float leftSpeed, float rightSpeed) {
+  moving = true;
+  lefttargetSpeed = leftSpeed;
+  righttargetspeed = rightSpeed;
 }
 
 //INPUT IS A TARGET HEADNG
@@ -112,10 +113,10 @@ bool turnDegrees(float targetHeading) { //RIGHT TURN IS POSITIVE, LEFT IS NEGATI
 
     //Right turn is positive, left turn is negative
     if (error > 2.0) {
-      rightturn(100);
+      rightturn(90);
       return false;
     } else if (error < -2.0) {
-      leftturn(100);
+      leftturn(90);
       return false;
     } else {
       stop();

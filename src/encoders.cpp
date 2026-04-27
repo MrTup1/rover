@@ -2,6 +2,7 @@
 #include "encoders.h"
 #include "pins.h"
 #include "IMU.h" 
+#include "PID.h"
 
 // counts for calculation each motor speed
 volatile long encFL = 0, encFR = 0, encBL = 0, encBR = 0;
@@ -17,7 +18,9 @@ const float tick_to_distance =   2 * PI * r / 700; // Check motor datasheet page
 long prevFL = 0, prevFR = 0, prevBL = 0, prevBR = 0; 
 float globalX = 0.0;
 float globalY = 0.0;
-float startHeading = 0.0;
+
+long timeNow = 0;
+long elapsedTime = 0;
 
 // ---------------------------------- interupts --------------------------------------
 
@@ -64,16 +67,22 @@ void encodersInit() {
 }
 
 void updateSpeeds() {
-  if (millis() - lastSpeedTime < 100) return;
+
+  timeNow = micros();
+  elapsedTime = timeNow - lastSpeedTime;
+
+  if (elapsedTime < 50000) return;
 
   noInterrupts();
   long cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
   interrupts();
 
-  fl = -(cFL - lastFL) * 0.5728; 
-  fr =  (cFR - lastFR) * 0.5728;
-  bl = -(cBL - lastBL) * 0.5728;
-  br =  (cBR - lastBR) * 0.5728;
+  float timeAdjustment = 50000.0 / (float)elapsedTime; //corrects for when elapsed time != 50ms
+
+  fl = -(cFL - lastFL) * 1.7123 * timeAdjustment;
+  fr =  (cFR - lastFR) * 1.7123 * timeAdjustment;
+  bl = -(cBL - lastBL) * 1.7123 * timeAdjustment;
+  br =  (cBR - lastBR) * 1.7123 * timeAdjustment;
 
   lastFL = cFL;
   lastFR = cFR;
@@ -83,9 +92,10 @@ void updateSpeeds() {
   leftside = (fl + bl) / 2;
   rightside = (fr + br) / 2;
 
-  lastSpeedTime = millis();
-}
+  lastSpeedTime = timeNow;
 
+  updatePID();
+}
 void updateDistances() {
 
   noInterrupts();

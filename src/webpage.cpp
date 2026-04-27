@@ -2,305 +2,464 @@
 #include "webPage.h"
 
 // --------------------- WEB PAGE -----------------------
-//html
-const char webpage[] PROGMEM = R"html(
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name='viewport' content='width=device-width, initial-scale=1'>
-  <style>
-    * { -webkit-user-select: none; -webkit-touch-callout: none; user-select: none; }
-    html, body { touch-action: manipulation; }
-    
-    /* row 2 please keep that stuff, everything with // */
-    body { font-family: Arial; text-align: center; margin-top: 40px; }
+const char webpage[] PROGMEM =
+"<!DOCTYPE html><html>"
+"<head><meta name='viewport' content='width=device-width, initial-scale=1'>"
+"<style>"
 
-    /* set up grid 3x3 for buttons */
-    .grid {
-      display: grid;
-      grid-template-columns: 70px 70px 70px 70px; /* 4 columns */
-      grid-template-rows: 70px 70px 70px 70px 70px 70px; /* 6 rows */
-      gap: 20px;
-      justify-content: center;
-    }
+"*{-webkit-user-select:none;-webkit-touch-callout:none;user-select:none;}"
+"html,body{touch-action:manipulation;}"
+// row 2 please keep that stuff, everything with //
+"body{font-family:Arial;text-align:center;margin-top:40px;}"
 
-    /* sets button sizes */
-    .btn {
-      width: 70px;
-      height: 70px;
-      border-radius: 20px;
-      background: #0080ff;
-      color: white;
-      border: none;
-    }
+// set up grid 3x3 for buttons
+".grid{"
+"  display:grid;"
+"  grid-template-columns:70px 70px 70px 70px;" // 4 coloums
+"  grid-template-rows:70px 70px 70px 70px 70px 70px 250px;" // 6 rows
+"  gap:20px;"
+"  justify-content:center;"
+"}"
 
-    /* set slider layout */
-    .speed-container {
-      margin-top: 60px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-    }
+// sets button sizes 
+".btn{"
+"  width:70px;"
+"  height:70px;"
+"  border-radius:20px;"
+"  background:#0080ff;"
+"  color:white;"
+"  border:none;"
+"  transform:rotate(90deg);"
+"  transform-origin:center;"
+"  font-weight:bold;"
+"}"
 
-    /* rotated label */
-    .speedLabel {
-      font-size: 14px;
-      font-weight: bold;
-      transform: rotate(90deg); /* makes it readable from the side so when you hold phone like controller */
-      transform-origin: center;
-      margin-bottom: 40px;
-      text-align: center;
-    }
+// set slider layput
+".speed-container{"
+"  align-items:center;"
+"  gap:5px;"
+"  display:flex;"
+"  flex-direction:column;"
+"}"
 
-    /* big slider */
-    #speedSlider {
-      width: 90vw;
-      height: 30px;
-    }
+// rotated label 
+".speedLabel{"
+"  font-size:14px;"
+"  font-weight:bold;"
+"  transform:rotate(90deg);" // makes it readable from the side so when you hold phone like controller
+"  transform-origin:center;"
+"  text-align:center;"
+"}"
 
-    /* slide speed displays (needed rotating) */
-    .sideSpeed {
-      font-size: 14px;
-      font-weight: bold;
-      transform: rotate(90deg);
-      transform-origin: center;
-      text-align: center;
-      justify-self: center;
-      align-self: center;
-      overflow: visible;
-    }
+// big slider 
+"#speedSlider{"
+"  width:70vw;"
+"  height:30px;"
+"}"
 
-    /* auto mode button. */
-    .autoBtn {
-      width: 70px;
-      height: 70px;
-      border-radius: 20px;
-      transform: rotate(90deg);
-      transform-origin: center;
-      border: none;
-      color: white;
-      background: yellow;
-      font-weight: bold;
-    }
+// lable displays (needed rotating)
+".lable{"
+"  font-size:14px;"
+"  font-weight:bold;"
+"  transform:rotate(90deg);"
+"  transform-origin:center;"
+"  text-align:center;"
+"  justify-self:center;"
+"  align-self:center;"
+"}"
+// auto mode button.
+".autoBtn{"
+"  width:70px;"
+"  height:70px;"
+"  border-radius:20px;"
+"  transform:rotate(90deg);"
+"  transform-origin:center;"
+"  border:none;"
+"  color:white;"
+"  background:grey;"
+"  font-weight:bold;"
+"}"
 
-    /* Target Input Controls */
-    .target-container {
-    grid-column: span 2;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    }
+// navigation mode button.
+".navigationBtn{"
+"  width:70px;"
+"  height:70px;"
+"  border-radius:20px;"
+"  transform:rotate(90deg);"
+"  transform-origin:center;"
+"  border:none;"
+"  color:white;"
+"  background:grey;"
+"  font-weight:bold;"
+"}"
 
-    .input-box {
-    width: 80px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    padding: 2px;
-    }
+// return mode button.
+".returnBtn{"
+"  width:70px;"
+"  height:70px;"
+"  border-radius:20px;"
+"  transform:rotate(90deg);"
+"  transform-origin:center;"
+"  border:none;"
+"  color:white;"
+"  background:grey;"
+"  font-weight:bold;"
+"}"
 
-    .go-btn {
-    background: green;
-    color: white;
-    padding: 8px;
-    border-radius: 10px;
-    border: none;
-    font-weight: bold;
-    }
+// recording mode button.
+".recBtn{"
+"  width:70px;"
+"  height:70px;"
+"  border-radius:20px;"
+"  transform:rotate(90deg);"
+"  transform-origin:center;"
+"  border:none;"
+"  color:white;"
+"  background:grey;"
+"  font-weight:bold;"
+"}"
 
-    .autoOn { background: green; }
-  </style>
-</head>
-<body>
+".trim-container{"
+"  align-items:center;"
+"  gap:5px;"
+"  display:flex;"
+"  flex-direction:column;"
+"}"
 
-<div class='grid' id='driveControls'>
-  <div></div>
-  <button class='btn' onmousedown='leftturn()' onmouseup='Stop()' ontouchstart='event.preventDefault(); leftturn()' ontouchend='event.preventDefault(); Stop()'></button>
-  <div></div>
-  <div class='sideSpeed'>
-    left dis: <span id='leftDis'>0</span><br>
-    forward dis: <span id='forwardDis'>0</span><br>
-    Right dis: <span id='rightDis'>0</span><br>
-  </div>
+"#trimSlider{"
+"  width:70vw;"
+"  height:30px;"
+"}"
+
+".autoOn{ background:green; }"
+".navOn{ background:green; }"
+".returnOn{ background:green; }"
+".recOn{ background:red; }"
+
+// navigation UI
+"/* Target Input Controls */"
+".target-container {"
+"  grid-column: span 2;"
+"  display: flex;"
+"  flex-direction: column;"
+"  gap: 10px;"
+"}"
+
+".input-box {"
+"  width: 80px;"
+"  border-radius: 5px;"
+"  border: 1px solid #ccc;"
+"  padding: 2px;"
+"}"
+
+".go-btn {"
+"  background: green;"
+"  color: white;"
+"  padding: 8px;"
+"  border-radius: 10px;"
+"  border: none;"
+"  font-weight: bold;"
+"}"
+
+".sideSpeed {"
+"  transform: rotate(90deg);"
+"  transform-origin: center;"
+"  font-size: 14px;"
+"  font-weight: bold;"
+"  display: flex;"
+"  flex-direction: column;"
+"  align-items: center;"
+"  justify-content: center;"
+"  white-space: nowrap;"
+"}"
+
+"</style>"
+"</head>"
+"<body>"
+
+// webpage grid
+"<div class='grid' id='driveControls'>"
+
+// row 1
+// "<div></div>" // means empty space in 3x3 grid
+"<button class='btn' onmousedown='backwardsleftturn()' onmouseup='Stop()' "
+"ontouchstart='backwardsleftturn()' ontouchend='Stop()'>back left</button>"
+"<button class='btn' onmousedown='leftturn()' onmouseup='Stop()' "
+"ontouchstart='leftturn()' ontouchend='Stop()'>left</button>"
+"<button class='btn' onmousedown='forwardleftturn()' onmouseup='Stop()' "
+"ontouchstart='forwardleftturn()' ontouchend='Stop()'>front left</button>"
+"<div class='lable'>" 
+" left dis: <span id='leftDis'>0</span><br>"
+" front dis: <span id='forwardDis'>0</span><br>"
+" Right dis: <span id='rightDis'>0</span><br>"
+"</div>"
+
+// row 2
+"<button class='btn' onmousedown='backwards()' onmouseup='Stop()' "
+"ontouchstart='backwards()' ontouchend='Stop()'>back</button>"
+"<div></div>"
+"<button class='btn' onmousedown='forward()' onmouseup='Stop()' "
+"ontouchstart='forward()' ontouchend='Stop()'>forward</button>"
+"<button class='autoBtn' onclick='toggleAuto()'>AUTO: OFF</button>"
+
+// row 3
+"<button class='btn' onmousedown='backwardsrightturn()' onmouseup='Stop()' "
+"ontouchstart='backwardsrightturn()' ontouchend='Stop()'>back right</button>"
+"<button class='btn' onmousedown='rightturn()' onmouseup='Stop()' "
+"ontouchstart='rightturn()' ontouchend='Stop()'>right</button>"
+"<button class='btn' onmousedown='forwardrightturn()' onmouseup='Stop()' "
+"ontouchstart='forwardrightturn()' ontouchend='Stop()'>front right</button>"
+"<button class='navigationBtn' onclick='toggleNavigation()'>NAV: OFF</button>"
+
+//used to display tje change from the pID when tuning
+// "</div>""<div class='lable'>" 
+// " PIDFL: <span id='dpwmFL'>0</span><br>"
+// " PIDFR: <span id='dpwmFR'>0</span><br>"
+// " PIDBL: <span id='dpwmBL'>0</span><br>"
+// " PIDBR: <span id='dpwmBR'>0</span><br>"
+// "</div>"
+
+// row 4
+"<div></div>"
+"<div class='trim-container'>"
+"<div class='speedLabel'>Trim: <span id='trimValue'>0</span></div>"
+"<input id='trimSlider' type='range' min='-50' max='50' value='0' oninput='updateTrim(this.value)'>"
+"</div>"
+"<div></div>"
+"<button class='returnBtn' onclick='toggleReturn()'>RETURN: OFF</button>"
+
+// row 5
+//slider
+"<div></div>"
+"<div class='speed-container'>"
+"<div class='speedLabel'>Speed: <span id='speedValue'>90</span></div>"
+"<input id='speedSlider' type='range' min='0' max='350' value='90' oninput='updateSpeed(this.value)'>"
+"</div>"
+"<div></div>"
+"<button class='recBtn' onclick='toggleRec()'>REC: OFF</button>"
+
+// row 6
+"<div class='lable'>" 
+" Target: <span id='targetSpeed'>0</span><br>"
+" L: <span id='lefttargetSpeed'>0</span><br>"
+" R: <span id='righttargetSpeed'>0</span><br>"
+"</div>"
+"<div class='lable'>" 
+// " R-avg: <span id='rightside'>0</span>" 
+// " L-avg: <span id='leftside'>0</span><br>"
+" FL: <span id='fl'>0</span><br>" 
+" FR: <span id='fr'>0</span><br>" 
+" BL: <span id='bl'>0</span><br>"
+" BR: <span id='br'>0</span><br>"
+" yaw: <span id='yaw'>0</span><br>"
+" count: <span id='MoveCount'>0</span><br>"
+"</div>"
+"<div class='lable'>" 
+" state: <span id='motionState'>0</span><br>"
+"</div>"
+"<div class='lable'>" 
+" mode: <span id='mode'>0</span><br>"
+"</div>"
+
+// row 7
+"<div class='sideSpeed'>"
+"  <button class='go-btn' onclick='sendTarget()'>GO TO TARGET</button>"
+"</div>"
+"<div class='sideSpeed'>"
+"  <label>Target Angle (°): "
+"  <input type='number' id='inputAngle' class='input-box' step='any'>"
+"  </label>"
+"</div>"
+"<div class='sideSpeed'>"
+"  <label>Target Dist (mm): "
+"  <input type='number' id='inputDist' class='input-box' step='any'>"
+"  </label>"
+"</div>"
+"<div class='lable'>"
+" Nav State: <span id='navInputState'>0</span><br>"
+" Global X: <span id='globalX'>0</span><br>"
+" Global Y: <span id='globalY'>0</span><br>"
+"</div>"
+
+"</div>"
+
+"<script>"
+
+// ----------------------------- Javascript ------------------------------------
+
+// speed update from scroller
+"function updateSpeed(val){"
+"  document.getElementById('speedValue').textContent = val;"
+"  fetch('/speed?value=' + val);"
+"}"
+
+// only allow one button to be pressed at once
+"let busy = false;"
+"function forward(){ " //checks if another buttons is being pressed, if so doent let other work
+"  if(busy) return;"
+"  busy = true;"
+"  fetch('/forward');"
+"}"
+"function rightturn(){ "
+"  if(busy) return;"
+"  busy = true;"
+"  fetch('/rightturn');"
+"}"
+"function leftturn(){ "
+"  if(busy) return;"
+"  busy = true;"
+"  fetch('/leftturn');"
+"}"
+"function backwards(){ "
+"  if(busy) return;"
+"  busy = true;"
+"  fetch('/backwards');"
+"}"
+"function Stop(){ "
+"  busy = false;"
+"  fetch('/Stop');"
+"}"
+"function forwardrightturn(){ "
+"  if(busy) return;"
+"  busy = true;"
+"  fetch('/forwardrightturn');"
+"}"
+"function backwardsrightturn(){ "
+"  if(busy) return;"
+"  busy = true;"
+"  fetch('/backwardsrightturn');"
+"}"
+"function forwardleftturn(){ "
+"  if(busy) return;"
+"  busy = true;"
+"  fetch('/forwardleftturn');"
+"}"
+"function backwardsleftturn(){ "
+"  if(busy) return;"
+"  busy = true;"
+"  fetch('/backwardsleftturn');"
+"}"
+
+// disable scrolling
+"document.querySelectorAll('.btn').forEach(btn => {"
+"  btn.addEventListener('touchmove', e => { e.preventDefault(); }, { passive:false });"
+"});"
+
+// release anywhere on page activates stop 
+"document.addEventListener('touchend', function(){ fetch('/Stop'); });"
+"document.addEventListener('mouseup', function(){ fetch('/Stop'); });"
+
+"setInterval(() => {"
+"  fetch('/speeds')"
+"    .then(r => r.json())"
+"    .then(data => {"
+"      document.getElementById('leftDis').textContent  = data.leftDistance.toFixed(1);"
+"      document.getElementById('forwardDis').textContent  = data.frontDistance.toFixed(1);"
+"      document.getElementById('rightDis').textContent  = data.rightDistance.toFixed(1);"
+// "      document.getElementById('dpwmFL').textContent  = data.PWMFL.toFixed(1);"
+// "      document.getElementById('dpwmFR').textContent  = data.PWMFR.toFixed(1);"
+// "      document.getElementById('dpwmBL').textContent  = data.PWMBL.toFixed(1);"
+// "      document.getElementById('dpwmBR').textContent  = data.PWMBR.toFixed(1);"
+"      document.getElementById('targetSpeed').textContent  = data.TargetSpeed.toFixed(1);"
+"      document.getElementById('lefttargetSpeed').textContent  = data.LeftTargetSpeed.toFixed(1);"
+"      document.getElementById('righttargetSpeed').textContent  = data.RightTargetSpeed.toFixed(1);"
+"      document.getElementById('fl').textContent  = data.FL.toFixed(1);"
+"      document.getElementById('fr').textContent = data.FR.toFixed(1);"
+"      document.getElementById('bl').textContent  = data.BL.toFixed(1);"
+"      document.getElementById('br').textContent = data.BR.toFixed(1);"
+// "      document.getElementById('rightside').textContent  = data.RIGHTAVG.toFixed(1);"
+// "      document.getElementById('leftside').textContent = data.LEFTAVG.toFixed(1);"
+"      document.getElementById('yaw').textContent = data.YAW.toFixed(1);"
+"      document.getElementById('MoveCount').textContent = data.MOVECOUNT.toFixed(1);"
+"      document.getElementById('motionState').textContent = data.MOTIONSTATE;"
+"      document.getElementById('mode').textContent = data.MODE;"
+"      document.getElementById('globalX').textContent = data.globalX.toFixed(1);"
+"      document.getElementById('globalY').textContent = data.globalY.toFixed(1);"
+"      document.getElementById('navInputState').textContent = data.inputState;"
+"    });"
+"}, 200);"
+
+//auto mode button 
+
+"function toggleAuto(){"
+"  fetch('/toggleAuto')"
+"    .then(response => response.text())"
+"    .then(state => {"
+"      const btn = document.querySelector('.autoBtn');"
+"      if(state === 'ON'){"
+"        btn.style.backgroundColor = 'green';"
+"        btn.textContent = 'AUTO: ON';"
+"      } else {"
+"        btn.style.backgroundColor = 'grey';"
+"        btn.textContent = 'AUTO: OFF';"
+"      }"
+"    });"
+"}"
+
+//navigation mode button 
+
+"function toggleNavigation(){"
+"  fetch('/toggleNavigation')"
+"    .then(response => response.text())"
+"    .then(state => {"
+"      const btn = document.querySelector('.navigationBtn');"
+"      if(state === 'ON'){"
+"        btn.style.backgroundColor = 'green';"
+"        btn.textContent = 'NAV: ON';"
+"      } else {"
+"        btn.style.backgroundColor = 'grey';"
+"        btn.textContent = 'NAV: OFF';"
+"      }"
+"    });"
+"}"
+
+//return mode button 
+
+"function toggleReturn(){"
+"  fetch('/toggleReturn')"
+"    .then(response => response.text())"
+"    .then(state => {"
+"      const btn = document.querySelector('.returnBtn');"
+"      if(state === 'ON'){"
+"        btn.style.backgroundColor = 'green';"
+"        btn.textContent = 'RETURN: ON';"
+"      } else {"
+"        btn.style.backgroundColor = 'grey';"
+"        btn.textContent = 'RETURN: OFF';"
+"      }"
+"    });"
+"}"
+
+//recording mode button 
+
+"function toggleRec(){"
+"  fetch('/toggleRec')"
+"    .then(response => response.text())"
+"    .then(state => {"
+"      const btn = document.querySelector('.recBtn');"
+"      if(state === 'ON'){"
+"        btn.style.backgroundColor = 'red';"
+"        btn.textContent = 'REC: ON';"
+"      } else {"
+"        btn.style.backgroundColor = 'grey';"
+"        btn.textContent = 'REC: OFF';"
+"      }"
+"    });"
+"}"
+
+"function sendTarget() {"
+"  const angle = document.getElementById('inputAngle').value;"
+"  const dist  = document.getElementById('inputDist').value;"
+"  if (angle === '' || dist === '') {"
+"    alert('Please enter both a target angle and distance.');"
+"    return;"
+"  }"
+"  fetch('/setTarget?angle=' + angle + '&dist=' + dist)"
+"    .then(r => r.text())"
+"    .then(msg => alert(msg))"
+"    .catch(() => alert('No response from rover — is it connected?'));"
+"}"
 
 
-  <button class='btn' onmousedown='backwards()' onmouseup='Stop()' ontouchstart='event.preventDefault(); backwards()' ontouchend='event.preventDefault(); Stop()'></button>
-  <div></div>
-  <button class='btn' onmousedown='forward()' onmouseup='Stop()' ontouchstart='event.preventDefault(); forward()' ontouchend='event.preventDefault(); Stop()'></button>
-  <div></div>
-
-
-  <div></div>
-  <button class='btn' onmousedown='rightturn()' onmouseup='Stop()' ontouchstart='event.preventDefault(); rightturn()' ontouchend='event.preventDefault(); Stop()'></button>
-  <div></div>
-  <div></div>
-
-
-  <div></div>
-  <div class='sideSpeed'>
-    PIDFL: <span id='dpwmFL'>0</span><br>
-    PIDFR: <span id='dpwmFR'>0</span><br>
-    PIDBL: <span id='dpwmBL'>0</span><br>
-    PIDBR: <span id='dpwmBR'>0</span><br>
-  </div>
-  <div class='sideSpeed'>
-    R-avg: <span id='rightside'>0</span>" " L-AVG: <span id='leftside'>0</span><br>
-    FL: <span id='fl'>0</span>" " FR: <span id='fr'>0</span><br>
-    L: <span id='bl'>0</span>" " BR: <span id='br'>0</span><br>
-  </div>
-  <button class='autoBtn' onclick='toggleAuto()'>AUTO: OFF</button>
-
-
-  <div class='speed-container'>
-    <input id='speedSlider' type='range' min='0' max='255' value='100' oninput='updateSpeed(this.value)'>
-  </div>
-  <div></div>
-  <div></div>
-  <div class='speedLabel'>Speed: <span id='speedValue'>100</span></div>
-
-
-  <div class = 'sideSpeed' >
-    Global X: <span id='globalX'>0</span><br>
-    Global Y: <span id='globalY'>0</span><br>
-  </div>
-  <div class='sideSpeed'>
-    TargetSpeed: <span id='targetSpeed'>0</span><br>
-  </div>
-  <div class = 'sideSpeed'>
-    Destination Reached: <span id = 'destinationReached'>false</span><br>
-  </div>
-  <div class='sideSpeed'>
-    Pitch: <span id='pitch'>0</span><br>
-  </div>
-  
-  
-  <div class = 'sideSpeed'>
-        <button class="go-btn" onclick="sendTarget()">GO TO TARGET</button>
-  </div>
-  <div class = 'sideSpeed'>
-        <label>Target Angle (°): 
-        <input type="number" id="inputAngle" class="input-box" step="any">
-        </label>
-  </div>
-  <div class = 'sideSpeed'>
-        <label>Target Dist (mm): 
-        <input type="number" id="inputDist" class="input-box" step="any">
-        </label>
-  </div>
-  <div></div>
-
-
-</div>
-
-<script>
-  // ----------------------------- Javascript ------------------------------------
-
-  // speed update from scroller
-  function updateSpeed(val) {
-    document.getElementById('speedValue').textContent = val;
-    fetch('/speed?value=' + val);
-  }
-
-  // only allow one button to be pressed at once
-  let busy = false;
-  
-  function forward() {
-    // checks if another buttons is being pressed, if so doent let other work
-    if(busy) return;
-    busy = true;
-    fetch('/forward');
-  }
-  
-  function rightturn() {
-    if(busy) return;
-    busy = true;
-    fetch('/rightturn');
-  }
-  
-  function leftturn() {
-    if(busy) return;
-    busy = true;
-    fetch('/leftturn');
-  }
-  
-  function backwards() {
-    if(busy) return;
-    busy = true;
-    fetch('/backwards');
-  }
-  
-  function Stop() {
-    // Ensures rover is actually moving, prevent overlaps
-    if(!busy) return;
-    busy = false;
-    fetch('/Stop');
-  }
-
-  // disable scrolling
-  document.querySelectorAll('.btn').forEach(btn => {
-    btn.addEventListener('touchmove', e => { e.preventDefault(); }, { passive: false });
-  });
-
-  // release anywhere on page activates stop 
-  // removed fetch
-  document.addEventListener('touchend', function(){ Stop(); });
-  document.addEventListener('mouseup', function(){ Stop(); });
-
-  setInterval(() => {
-    fetch('/speeds')
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById('leftDis').textContent  = data.leftDistance.toFixed(1);
-        document.getElementById('forwardDis').textContent  = data.frontDistance.toFixed(1);
-        document.getElementById('rightDis').textContent  = data.rightDistance.toFixed(1);
-        document.getElementById('dpwmFL').textContent  = data.PWMFL.toFixed(1);
-        document.getElementById('dpwmFR').textContent  = data.PWMFR.toFixed(1);
-        document.getElementById('dpwmBL').textContent  = data.PWMBL.toFixed(1);
-        document.getElementById('dpwmBR').textContent  = data.PWMBR.toFixed(1);
-        document.getElementById('targetSpeed').textContent  = data.TargetSpeed.toFixed(1);
-        document.getElementById('fl').textContent  = data.FL.toFixed(1);
-        document.getElementById('fr').textContent = data.FR.toFixed(1);
-        document.getElementById('bl').textContent  = data.BL.toFixed(1);
-        document.getElementById('br').textContent = data.BR.toFixed(1);
-        document.getElementById('rightside').textContent  = data.RIGHTAVG.toFixed(1);
-        document.getElementById('leftside').textContent = data.LEFTAVG.toFixed(1);
-        // document.getElementById('pitch').textContent = data.pitch.toFixed(1);
-        document.getElementById('pitch').textContent = data.Pitch.toFixed(1);
-        document.getElementById('destinationReached').textContent = data.destinationReached.toFixed(1);
-        document.getElementById('globalX').textContent = data.globalX.toFixed(1);
-        document.getElementById('globalY').textContent = data.globalY.toFixed(1);
-      });
-  }, 200);
-
-  // send target angle and distance to rover
-  function sendTarget() {
-    const angle = document.getElementById('inputAngle').value;
-    const dist  = document.getElementById('inputDist').value;
-    if (angle === '' || dist === '') {
-      alert('Please enter both a target angle and distance.');
-      return;
-    }
-    fetch('/setTarget?angle=' + angle + '&dist=' + dist) // HTTPS get request
-      .then(r => r.text())
-      .then(msg => alert(msg))
-      .catch(() => alert('No response from rover — is it connected?'));
-  }
-
-  // auto mode button 
-  function toggleAuto() {
-    fetch('/toggleAuto')
-      .then(response => response.text())
-      .then(state => {
-        const btn = document.querySelector('.autoBtn');
-        if(state === 'ON'){
-          btn.style.backgroundColor = 'green';
-          btn.textContent = 'AUTO: ON';
-        } else {
-          btn.style.backgroundColor = 'red';
-          btn.textContent = 'AUTO: OFF';
-        }
-      });
-  }
-</script>
-</body>
-</html>
-)html";
+"</script>"
+"</body></html>";
