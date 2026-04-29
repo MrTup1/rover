@@ -22,7 +22,7 @@ volatile bool obstruction = false;
 volatile bool bumper = false;
 float endDirection = 0;
 int turnDirection = 0;
-int heading = 0;
+int autoStartHeading = 0;
 float prevError = 0;
 long obstructionStopTime = 0;
 long waitStart = 0;
@@ -53,7 +53,7 @@ void runAutoMode() {
   if (mode != AUTO) return; 
 
   if (motionState == START_AUTO) {
-    heading = Direction;
+    autoStartHeading = Direction;
     forward(SPEED); //makes motionstate = FORWARD
   }
 
@@ -62,7 +62,7 @@ void runAutoMode() {
   }
 
   if (motionState == FORWARD || motionState == FORWARDRIGHT || motionState == FORWARDLEFT) {
-    float errors = heading - Direction;
+    float errors = autoStartHeading - Direction;
     while (errors > 180) errors -= 360;
     while (errors < -180) errors += 360;
 
@@ -124,7 +124,7 @@ void runAutoMode() {
       waitLeft = false;
       waitRight = false;
 
-      float error = heading - Direction;
+      float error = autoStartHeading - Direction;
       while (error > 180) error -= 360;
       while (error < -180) error += 360;
 
@@ -149,15 +149,15 @@ void runAutoMode() {
       }
       else if (abs(error) > 35) {
         if (error > 0) {
-          endDirection = heading;
+          endDirection = autoStartHeading;
           if (endDirection >= 360) endDirection -= 360;
           rightturn(SPEED);
           motionState = TURNING_90;
         } else {
-          endDirection = heading;
+          endDirection = autoStartHeading;
           if (endDirection < 0) endDirection += 360;
           leftturn(SPEED);
-          motionState = TURNING_90; // turns until the pointing back at the heading
+          motionState = TURNING_90; // turns until the pointing back at the autoStartHeading
         }
       }
       else {

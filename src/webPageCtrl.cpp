@@ -19,6 +19,7 @@ extern float lefttargetSpeed, righttargetspeed;
 extern float trim;
 extern float Direction;
 extern int moveCount;
+extern int turning;
 extern float targetDistance;
 extern float targetAngle;
 extern float desiredHeading;
@@ -27,6 +28,7 @@ extern int inputState;
 extern float globalX; 
 extern float globalY; 
 extern float shockMagnitude;
+extern int autoStartHeading;
 
 
 String stateStr; // for displaying state of the rover when in auto mode
@@ -124,6 +126,7 @@ void setupWebServer(WebServer &server) {
     json += "\"TargetSpeed\":" + String(targetSpeed,1) + ",";
     json += "\"LeftTargetSpeed\":" + String(lefttargetSpeed,1) + ",";
     json += "\"RightTargetSpeed\":" + String(righttargetspeed,1) + ",";
+    json += "\"Trim\":" + String(trim,1) + ",";
     json += "\"FL\":" + String(fl,1) + ",";
     json += "\"FR\":" + String(fr,1) + ",";
     json += "\"BL\":" + String(bl,1) + ",";
@@ -132,9 +135,10 @@ void setupWebServer(WebServer &server) {
     // json += "\"LEFTAVG\":" + String(leftside,1) + ",";
     json += "\"YAW\":" + String(Direction,1) + ",";
     json += "\"MOVECOUNT\":" + String(moveCount) + ",";
+    json += "\"HEADING\":" + String(autoStartHeading) + ",";
     json += "\"globalX\":" + String(globalX) + ","; 
     json += "\"globalY\":" + String(globalY) + ","; 
-    json += "\"inputState\":" + String(shockMagnitude) + ","; 
+    json += "\"inputState\":" + String(inputState) + ","; 
 
     switch(motionState){
       case STOPPED: stateStr = "STOPPED"; break;
@@ -151,6 +155,11 @@ void setupWebServer(WebServer &server) {
       case TURNING_180: stateStr = "TURNING_180"; break;
       case WAITING: stateStr = "WAITING"; break;
       case STARTRETURN: stateStr = "START RETURN"; break;
+      case TURNING_HEADING: stateStr = "TURN HEADING"; break;
+      case TURNING_FREE: stateStr = "TURN FREE"; break;
+      case WAIT_TURN: stateStr = "WAIT TURN"; break;
+      case WAIT_BACK: stateStr = "WAIT BACK"; break;
+      case START_AUTO: stateStr = "START AUTO"; break;
 
       default: stateStr = "UNKNOWN";
     }
@@ -180,6 +189,7 @@ void setupWebServer(WebServer &server) {
       mode = AUTO;
       server.send(200, "text/plain", "ON");
       stop();
+      motionState = START_AUTO;
     } else {
       mode = FREEDRIVE;
       server.send(200, "text/plain", "OFF");
@@ -216,6 +226,7 @@ void setupWebServer(WebServer &server) {
     } else {
       mode = FREEDRIVE;
       moveCount = 0;
+      turning = false;
       server.send(200, "text/plain", "OFF");
       stop();
     }

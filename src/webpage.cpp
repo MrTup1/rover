@@ -377,6 +377,7 @@ const char webpage[] PROGMEM =
 // "      document.getElementById('leftside').textContent = data.LEFTAVG.toFixed(1);"
 "      document.getElementById('yaw').textContent = data.YAW.toFixed(1);"
 "      document.getElementById('MoveCount').textContent = data.MOVECOUNT.toFixed(1);"
+"      document.getElementById('heading').textContent = data.HEADING.toFixed(1);"
 "      document.getElementById('motionState').textContent = data.MOTIONSTATE;"
 "      document.getElementById('mode').textContent = data.MODE;"
 "      document.getElementById('globalX').textContent = data.globalX.toFixed(1);"

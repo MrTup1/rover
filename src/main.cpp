@@ -11,11 +11,13 @@
 #include "PID.h"
 #include "auto.h"
 #include "navigation.h"
+#include "servo.h"
+#include "return.h"
 
 WebServer server(80);
 // CRASH CHECK
 static unsigned long last_IMU_check = 0;
-const float CRASH_THRESHOLD = 9999.0; // TUNE THIS
+const float CRASH_THRESHOLD = 10.0; // TUNE THIS
 unsigned long crashStart = 0; 
 float shockMagnitude;
 
@@ -30,9 +32,12 @@ void setup() {
   delay(1000);
   motorsInit();
   encodersInit();
+  bumperInit();
+  servoInit();
   IMU_init(); //This blocks anything until calibration is complete
   sensorsInit();
   tfLuna.begin();
+  setStartHeading();
     
   WiFi.softAP("ESP32-Group B rover", "Williscool");
 
@@ -61,6 +66,7 @@ void loop() {
   static uint32_t lastSensors = 0;
   if (millis() - lastSensors > 100) {
     updateSensors();
+    setServo();
     lastSensors = millis();
   }
   
@@ -91,5 +97,7 @@ void loop() {
 
   runAutoMode();
   runNavigationMode();
+  record();
+  returnmode(); 
 
 }  
