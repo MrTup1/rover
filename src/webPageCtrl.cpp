@@ -16,6 +16,7 @@ extern bool returnMode;
 extern bool recording;
 extern volatile float frontDistance, leftDistance, rightDistance;
 extern float lefttargetSpeed, righttargetspeed;
+extern float trim;
 extern float Direction;
 extern int moveCount;
 extern float targetDistance;
@@ -98,6 +99,13 @@ void setupWebServer(WebServer &server) {
   server.on("/speed", [&server]() {
     if (server.hasArg("value")) {
       SPEED = server.arg("value").toInt();
+    }
+    server.send(200, "text/plain", "OK");
+  });
+  
+  server.on("/trim", [&server]() {
+    if (server.hasArg("value")) {
+      trim = server.arg("value").toInt()/10;
     }
     server.send(200, "text/plain", "OK");
   });

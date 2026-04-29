@@ -37,7 +37,6 @@ void bumperInit() {
 
 //Automode loop
 void runAutoMode() {
-  SPEED = 90;
   if (mode != AUTO) return; 
 
   if (motionState == STOPPED) {

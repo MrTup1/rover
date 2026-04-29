@@ -8,6 +8,7 @@ bool moving = false;
 float targetSpeed = 0;
 float lefttargetSpeed = 0;
 float righttargetspeed = 0;
+float trim = 0.0;
 
 extern float heading;
 
@@ -29,7 +30,7 @@ void forward(int speed) { //left and right side forward
   moving = true;
   targetSpeed = speed;
   lefttargetSpeed = speed;
-  righttargetspeed = speed;
+  righttargetspeed = speed + trim;
 }
 
 void backward(int speed) { //left and right side backwards
@@ -37,7 +38,7 @@ void backward(int speed) { //left and right side backwards
   moving = true;
   targetSpeed = -speed;
   lefttargetSpeed = -speed;
-  righttargetspeed = -speed;
+  righttargetspeed = -speed - trim;
 }
 
 void stop() { // both sides stopped
@@ -67,28 +68,28 @@ void forwardleftturn(int speed) { // left backwards and right forward
   moving = true;
   targetSpeed = speed;
   lefttargetSpeed = speed / 2.0;
-  righttargetspeed = (speed);
+  righttargetspeed = (speed + trim);
 }
 void forwardrightturn(int speed) { //left forward and right backwards
   motionState = FORWARDRIGHT;
   moving = true;
   targetSpeed = speed;
   lefttargetSpeed = speed;
-  righttargetspeed = (speed) / 2.0;
+  righttargetspeed = (speed + trim) / 2.0;
 }
 void backwardsleftturn(int speed) { // left backwards and right forward
   motionState = BACKWARDSLEFT;
   moving = true;
   targetSpeed = -speed;
   lefttargetSpeed = -speed / 2.0;
-  righttargetspeed = -speed;
+  righttargetspeed = -speed - trim;
 }
 void backwardsrightturn(int speed) { //left forward and right backwards
   motionState = BACKWARDSRIGHT;
   moving = true;
   targetSpeed = -speed;
   lefttargetSpeed = -speed;
-  righttargetspeed = (-speed) / 2.0;
+  righttargetspeed = (-speed - trim) / 2.0;
 }
 
 void steer(float leftSpeed, float rightSpeed) {
@@ -99,6 +100,9 @@ void steer(float leftSpeed, float rightSpeed) {
 
 //INPUT IS A TARGET HEADNG
 bool turnDegrees(float targetHeading) { //RIGHT TURN IS POSITIVE, LEFT IS NEGATIVE, returns true when finish turning
+    static float turnIntegral = 0;
+    static unsigned long lastTurnTime = 0;
+    
     if (targetHeading >= 360.0) targetHeading -= 360.0;
     if (targetHeading < 0.0) targetHeading += 360.0;
 
@@ -111,15 +115,37 @@ bool turnDegrees(float targetHeading) { //RIGHT TURN IS POSITIVE, LEFT IS NEGATI
       error += 360;
     }
 
+    float turnKp = 1.8;       // The initial push
+    float turnKi = 0.3;       // THE MAGIC NUMBER: How fast it ramps up power when stuck
+    int maxTurnSpeed = 90;    // Absolute limit to prevent madness
+    int minTurnSpeed = 40;
+
+
+    unsigned long now = millis();
+    float dt = (now - lastTurnTime) / 1000.0; // convert to seconds
+    if (dt > 0.1) dt = 0.05; // Safety catch for the first loop from static variable 
+        lastTurnTime = now;
+
     //Right turn is positive, left turn is negative
-    if (error > 2.0) {
-      rightturn(SPEED); //slower speed to prevent overshooting
+    if (abs(error) > 2.0) {
+      turnIntegral += error * dt;
+      turnIntegral = constrain(turnIntegral, -40.0, 40.0); //anti winding
+
+      int calculatedSpeed = (error * turnKp) + (turnIntegral * turnKi);
+      
+      // Ensure we don't exceed max speed
+      int finalTurnSpeed = constrain(abs(calculatedSpeed), minTurnSpeed, maxTurnSpeed);
+
+      if (error > 0) {
+        rightturn(finalTurnSpeed); 
+      } else {
+        leftturn(finalTurnSpeed);
+      }
       return false;
-    } else if (error < -2.0) {
-      leftturn(SPEED);
-      return false;
+
     } else {
       stop();
+      turnIntegral = 0; //reset integral memory for next turn
       return true;
     }
 }

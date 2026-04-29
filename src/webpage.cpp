@@ -295,6 +295,12 @@ const char webpage[] PROGMEM =
 "  fetch('/speed?value=' + val);"
 "}"
 
+// speed trim from scroller
+"function updateTrim(val){"
+"  document.getElementById('trimValue').textContent = val/10;"
+"  fetch('/trim?value=' + val);"
+"}"
+
 // only allow one button to be pressed at once
 "let busy = false;"
 "function forward(){ " //checks if another buttons is being pressed, if so doent let other work
