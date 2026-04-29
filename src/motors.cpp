@@ -113,10 +113,10 @@ bool turnDegrees(float targetHeading) { //RIGHT TURN IS POSITIVE, LEFT IS NEGATI
 
     //Right turn is positive, left turn is negative
     if (error > 2.0) {
-      rightturn(90);
+      rightturn(SPEED); //slower speed to prevent overshooting
       return false;
     } else if (error < -2.0) {
-      leftturn(90);
+      leftturn(SPEED);
       return false;
     } else {
       stop();

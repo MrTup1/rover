@@ -7,6 +7,7 @@ extern float lefttargetSpeed, righttargetspeed;
 extern float trim;
 
 void resetPID();
+void resetPIDVariables();
 void updatePID();
 
 void rampCalc();   //Calculates new ramped targets ahead of PID PWM calc

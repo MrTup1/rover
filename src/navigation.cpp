@@ -33,7 +33,11 @@ const int OPEN_SPACE_TIME_MS = 300; // 300ms of consistent open space
 
 //P controller heading variables
 static float Kp = 0.6;
-int baseSpeed = 90;
+int baseSpeed = 80;
+
+//Preventing stall detection variables
+unsigned long navWaitStart = 0;
+int nextState = 0;
 
 void runNavigationMode() {
     if (mode != NAVIGATION) return; // Master wrapper check
@@ -43,7 +47,9 @@ void runNavigationMode() {
 
           if (turnDegrees(desiredHeading)) {
             resetEncoders();
-            inputState = 3;
+            navWaitStart = millis();
+            nextState = 3;
+            inputState = 99;        
           }
     }
 
@@ -58,9 +64,12 @@ void runNavigationMode() {
             mode = FREEDRIVE;
         }
 
-        else if (frontDistance > 0 && frontDistance < 25) {
+        else if ((frontDistance > 0 && frontDistance < 25) || //Object detected directly in front of rover, or corners
+                (leftDistance > 0  && leftDistance < 7)   || 
+                (rightDistance > 0 && rightDistance < 7)) {
+            
             stop();
-            //Object detected directly in front of rover
+
             if (leftDistance > rightDistance) {
             mainturnAngle = -90.0f;
             } else if (rightDistance > leftDistance) {
@@ -70,7 +79,9 @@ void runNavigationMode() {
             }
 
             avoidTargetHeading = heading + mainturnAngle;
-            inputState = 4;
+            navWaitStart = millis();
+            nextState = 4;
+            inputState = 99;
         }
 
         else {
@@ -85,8 +96,8 @@ void runNavigationMode() {
             
             //Implement P controller
             float P_term = Kp * headingError; //This is the adjustment if rover is slightly heading to the left or right
-            int leftSpeed = baseSpeed + P_term;
-            int rightSpeed = baseSpeed - P_term;
+            int leftSpeed = SPEED + P_term;
+            int rightSpeed = SPEED - P_term;
             steer(leftSpeed, rightSpeed);
         }
     }
@@ -99,7 +110,10 @@ void runNavigationMode() {
         obstacleLocationLogged = false;
         openSpaceStart = 0;
         stop();
-        inputState = 5;
+
+        navWaitStart = millis();
+        nextState = 5;
+        inputState = 99;
         } 
     }
 
@@ -122,7 +136,9 @@ void runNavigationMode() {
             }
 
             avoidTargetHeading = heading + mainturnAngle;
-            inputState = 4; // Loop back to the turning state!
+            navWaitStart = millis();
+            nextState = 4;
+            inputState = 99;
             return; // Skip the rest of State 5 for this loop iteration
         }
 
@@ -139,11 +155,11 @@ void runNavigationMode() {
             if (sideClear) {
                 if (openSpaceStart == 0) {
                     openSpaceStart = millis();
-                    forward(baseSpeed);
+                    forward(SPEED);
                 } else if (millis() - openSpaceStart > OPEN_SPACE_TIME_MS) { //read 3 cont
                     edgeDetected = true;
                 } else {
-                    forward(baseSpeed);
+                    forward(SPEED);
                 }
             } else {
                 float currentSideDist = (mainturnAngle == -90.0f) ? rightDistance : leftDistance;
@@ -152,7 +168,7 @@ void runNavigationMode() {
                     openSpaceStart = 0; 
                 }
                 openSpaceStart = 0;
-                forward(baseSpeed);
+                forward(SPEED);
             }
         }
         
@@ -167,10 +183,12 @@ void runNavigationMode() {
         if (edgeDetected == true) {
         float distance_covered = (leftSideDistance + rightSideDistance) / 2.0f - edgeDetectedAt;
         if (distance_covered < ROVER_LENGTH) {
-            forward(baseSpeed);
+            forward(SPEED);
         } else {
             stop();
-            inputState = 6;
+            navWaitStart = millis();
+            nextState = 6;
+            inputState = 99;
         }
         }
     }
@@ -181,9 +199,17 @@ void runNavigationMode() {
         float rad = atan2(-globalY, (targetDistance - globalX)); //Get angle from odometry virtual plane
         desiredHeading = (rad * (180 / PI)) + startHeading;      //Convert odometry into real IMU data
         if (turnDegrees(desiredHeading)) {
-        inputState = 3;
+            navWaitStart = millis();
+            nextState = 3;
+            inputState = 99;
         };
     }
 
+    // Stall Compensation Code, for input state transitions
+    if (inputState == 99) {
+        if (millis() - navWaitStart > 500) { // 500ms settle time
+            inputState = nextState;
+        }
+    }
 
 }

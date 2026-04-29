@@ -41,7 +41,7 @@ float FinalpwmFL = 0.0, FinalpwmFR = 0.0, FinalpwmBL = 0.0, FinalpwmBR = 0.0;
 //Motor Stall Detection (Flag true = stalled)
 int stallLimit = 10; //Sets how many cycles of underspeed before stall detection kicks in
 float stallThreshold = 0.5; //Sets the stall detection threshold (0.5 = 50% underspeed)
-int maxStallCount = 10; //Sets the numebr of cycles under stall threshold before flag kicks in
+int maxStallCount = 30; //Sets the numebr of cycles under stall threshold before flag kicks in
 
 bool stallFlagFL = false, stallFlagFR = false, stallFlagBL = false, stallFlagBR = false;
 int stallCountFL = 0, stallCountFR = 0, stallCountBL = 0, stallCountBR = 0;
@@ -192,4 +192,20 @@ void stallCheck(){
   if(abs(br) < abs(rightRamped) * stallThreshold && abs(rightRamped) >= minPWM) stallCountBR++;
   else if(stallCountBR > 0) stallCountBR--;
   if(stallCountBR >= maxStallCount) stallFlagBR = true;
+}
+
+void resetPIDVariables() {
+  integralFL = 0;
+  integralFR = 0;
+  integralBL = 0;
+  integralBR = 0;
+  
+  prevErrorFL = 0;
+  prevErrorFR = 0;
+  prevErrorBL = 0;
+  prevErrorBR = 0;
+  
+  // Also reset the soft-start ramps so it doesn't instantly jump to a high speed 
+  leftRamped = 0.0;
+  rightRamped = 0.0;
 }

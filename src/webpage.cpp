@@ -152,8 +152,10 @@ const char webpage[] PROGMEM =
 "  padding: 2px;"
 "}"
 
+// send target button
 ".go-btn {"
 "  background: green;"
+"  height:70px;"
 "  color: white;"
 "  padding: 8px;"
 "  border-radius: 10px;"
@@ -346,8 +348,6 @@ const char webpage[] PROGMEM =
 "});"
 
 // release anywhere on page activates stop 
-"document.addEventListener('touchend', function(){ fetch('/Stop'); });"
-"document.addEventListener('mouseup', function(){ fetch('/Stop'); });"
 
 "setInterval(() => {"
 "  fetch('/speeds')"
@@ -446,6 +446,8 @@ const char webpage[] PROGMEM =
 "      }"
 "    });"
 "}"
+
+// Send Target Button
 
 "function sendTarget() {"
 "  const angle = document.getElementById('inputAngle').value;"

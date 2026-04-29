@@ -15,7 +15,7 @@
 WebServer server(80);
 // CRASH CHECK
 static unsigned long last_IMU_check = 0;
-const float CRASH_THRESHOLD = 15.0; // TUNE THIS
+const float CRASH_THRESHOLD = 9999.0; // TUNE THIS
 unsigned long crashStart = 0; 
 
 
@@ -77,7 +77,7 @@ void loop() {
       if (shockMagnitude > CRASH_THRESHOLD) {
           if (crashStart == 0) {
             crashStart = millis();
-          } else if (millis() - crashStart >= 1000) { //NEEDS TESTING
+          } else if (millis() - crashStart >= 30) { //NEEDS TESTING
             stop();
             inputState = 0;   // Put it in manual mode
             mode = FREEDRIVE;
