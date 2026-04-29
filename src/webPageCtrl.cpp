@@ -26,6 +26,7 @@ extern float heading;
 extern int inputState;
 extern float globalX; 
 extern float globalY; 
+extern float shockMagnitude;
 
 
 String stateStr; // for displaying state of the rover when in auto mode
@@ -133,7 +134,7 @@ void setupWebServer(WebServer &server) {
     json += "\"MOVECOUNT\":" + String(moveCount) + ",";
     json += "\"globalX\":" + String(globalX) + ","; 
     json += "\"globalY\":" + String(globalY) + ","; 
-    json += "\"inputState\":" + String(inputState) + ","; 
+    json += "\"inputState\":" + String(shockMagnitude) + ","; 
 
     switch(motionState){
       case STOPPED: stateStr = "STOPPED"; break;

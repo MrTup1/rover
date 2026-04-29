@@ -2,6 +2,7 @@
 #include "return.h"
 #include "auto.h"
 #include "motors.h"
+#include "encoders.h"
 
 bool returnMode = false;
 bool recording = false;
@@ -21,8 +22,9 @@ long waitingStart = 0;
 bool executingMove = false;
 int moveType = 0; // -1 for move tyoe = turn and 1 for drive
 long currentEncoder = 0;
-long encoderTolerance = 100;
-bool turning;
+long encoderTolerance = 0;
+bool turning = false;
+
 
 
 MotionState prevMotionState = STOPPED;
@@ -38,7 +40,7 @@ void record(){
     motionActive = true;
 
     noInterrupts();
-    long cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
+    cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
     interrupts();
 
     if (motionState == FORWARD || motionState == BACKWARDS) {
@@ -51,7 +53,7 @@ void record(){
     startDirection = Direction;               
   }
 
-  if (motionState == STOPPED && motionActive && prevMotionState) {
+  if (motionState == STOPPED && motionActive && prevMotionState != STOPPED) {
     endMove();
   }
   prevMotionState = motionState;
@@ -61,43 +63,55 @@ void endMove() {
   Move m;
 
   noInterrupts();
-  long cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
+  cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
   interrupts();
 
   if (currentMotion == FORWARD) {
     long delta = ((cFL + cFR + cBL + cBR) / 4) - startEncoder;
     m.type = FORWARD;
     m.value = delta;   // encoder ticks 
+    moves[moveCount++] = m;
+    motionActive = false;
   }
 
   if (currentMotion == BACKWARDS) {
     long delta = ((cFL + cFR + cBL + cBR) / 4) - startEncoder;
     m.type = BACKWARDS;
     m.value = delta;   // encoder ticks 
+    moves[moveCount++] = m;
+    motionActive = false;
   }
 
   if (currentMotion == FORWARDLEFT) {
     long delta = ((cFR + cBR) / 2) - startEncoder;
     m.type = FORWARDLEFT;
     m.value = delta;   // encoder ticks 
+    moves[moveCount++] = m;
+    motionActive = false;
   }
 
   if (currentMotion == FORWARDRIGHT) {
     long delta = ((cFL + cBL) / 2) - startEncoder;
     m.type = FORWARDRIGHT;
     m.value = delta;   // encoder ticks 
+    moves[moveCount++] = m;
+    motionActive = false;
   }
 
   if (currentMotion == BACKWARDSLEFT) {
     long delta = ((cFR + cBR) / 2) - startEncoder;
     m.type = BACKWARDSLEFT;
     m.value = delta;   // encoder ticks 
+    moves[moveCount++] = m;
+    motionActive = false;
   }
 
   if (currentMotion == BACKWARDSRIGHT) {
     long delta = ((cFL + cBL) / 2) - startEncoder;
     m.type = BACKWARDSRIGHT;
     m.value = delta;   // encoder ticks 
+    moves[moveCount++] = m;
+    motionActive = false;
   }
 
   if (currentMotion == RIGHTTURN) {
@@ -109,6 +123,8 @@ void endMove() {
 
     m.type = RIGHTTURN;
     m.value = delta;
+    moves[moveCount++] = m;
+    motionActive = false;
   }
 
   if (currentMotion == LEFTTURN) {
@@ -119,6 +135,8 @@ void endMove() {
 
     m.type = LEFTTURN;
     m.value = delta;
+    moves[moveCount++] = m;
+    motionActive = false;
   }
 
   if (currentMotion == TURNING_90) {
@@ -129,14 +147,9 @@ void endMove() {
     if (turnDirection == -1) m.type = LEFTTURN;
     else if (turnDirection == +1) m.type = RIGHTTURN;
     m.value = delta;
-  }
-
-  if (moveCount < MAX_MOVES) {
     moves[moveCount++] = m;
-    moveCount++;
+    motionActive = false;
   }
-
-  motionActive = false;
 }
 
 
@@ -145,7 +158,7 @@ void returnmode() {
 
   if (motionState == STARTRETURN) {
 
-    goalDirection = Direction - 180;
+    goalDirection = Direction - 170;
     if (goalDirection < 0) {
       goalDirection += 360;
     }
@@ -185,14 +198,14 @@ void returnmode() {
     // invert move
     if (currentMove.type == LEFTTURN) {
       currentMove.type = RIGHTTURN;
-      goalDirection = Direction + currentMove.value; // finds goal direction
+      goalDirection = Direction + currentMove.value + 10; // finds goal direction
       if (goalDirection >= 360) { // mappes to 0 - 360
         goalDirection -= 360;
       }
       moveType = -1;
     } else if (currentMove.type == RIGHTTURN) {
       currentMove.type = LEFTTURN;
-      goalDirection = Direction + currentMove.value; // if delta or current.value is negative then it will move left
+      goalDirection = Direction + currentMove.value - 10; // if delta or current.value is negative then it will move left
       if (goalDirection < 0) {
         goalDirection += 360;
       }
@@ -200,7 +213,7 @@ void returnmode() {
     }
 
     noInterrupts();
-    long cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
+    cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
     interrupts();
 
     if (currentMove.type == FORWARD || currentMove.type == BACKWARDS) {
@@ -242,7 +255,7 @@ void returnmode() {
 
     } else if (moveType == 1) {
       noInterrupts();
-      long cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
+      cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
       interrupts();
 
       if (currentMove.type == FORWARD || currentMove.type == BACKWARDS) {
@@ -254,7 +267,7 @@ void returnmode() {
       }
 
       float error = goalEncoder - currentEncoder;
-      if (abs(error) < encoderTolerance || (abs(prevERROR) > 10 && prevERROR * error < 0)) { 
+      if ((prevERROR * error < 0) || abs(error) < encoderTolerance) {
         stop();
         executingMove = false;
         moveCount--;

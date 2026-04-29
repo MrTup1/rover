@@ -17,6 +17,7 @@ WebServer server(80);
 static unsigned long last_IMU_check = 0;
 const float CRASH_THRESHOLD = 9999.0; // TUNE THIS
 unsigned long crashStart = 0; 
+float shockMagnitude;
 
 
 #define lidarSCL 26
@@ -46,7 +47,7 @@ void loop() {
   updateSensors();
 
   // --- SLOPE DETECTION --- //
-  if (abs(pitch) > 45 || abs(roll) > 45) {
+  if (abs(pitch) > 50 || abs(roll) > 50) {
       Serial.println("DANGER: TILT DETECTED!");
       stop();
   }
@@ -70,7 +71,7 @@ void loop() {
       last_IMU_check = millis();
       updateIMU();           // Updates Pitch/Roll/Heading
 
-      float shockMagnitude = sqrt(accX * accX + 
+      shockMagnitude = sqrt(accX * accX + 
                                   accY * accY + 
                                   accZ * accZ);
 

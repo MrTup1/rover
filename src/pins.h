@@ -49,4 +49,7 @@
 #define lidarTX 26
 #define lidarRX 27
 
+//bumper
+#define bumperPin 3
+
 #endif

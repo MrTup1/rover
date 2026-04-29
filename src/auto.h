@@ -19,7 +19,12 @@ enum MotionState {
   TURNING_90,
   TURNING_180,
   WAITING,
-  STARTRETURN
+  STARTRETURN,
+  TURNING_HEADING,
+  TURNING_FREE,
+  WAIT_TURN,
+  WAIT_BACK,
+  START_AUTO
 };
 
 extern MotionState motionState;
@@ -40,5 +45,6 @@ struct Move {
 
 void bumperInit();
 void runAutoMode();
+bool turnlogic();
 
 #endif
