@@ -24,7 +24,8 @@ enum MotionState {
   TURNING_FREE,
   WAIT_TURN,
   WAIT_BACK,
-  START_AUTO
+  START_AUTO,
+  CHECK_TURN
 };
 
 extern MotionState motionState;

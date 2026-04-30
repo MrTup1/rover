@@ -119,6 +119,20 @@ const char webpage[] PROGMEM =
 "  font-weight:bold;"
 "}"
 
+// carrage mode button.
+".carrageBtn{"
+"  width:70px;"
+"  height:70px;"
+"  border-radius:20px;"
+"  transform:rotate(90deg);"
+"  transform-origin:center;"
+"  border:none;"
+"  color:white;"
+"  background:grey;"
+"  font-weight:bold;"
+"}"
+
+
 ".trim-container{"
 "  align-items:center;"
 "  gap:5px;"
@@ -135,6 +149,7 @@ const char webpage[] PROGMEM =
 ".navOn{ background:green; }"
 ".returnOn{ background:green; }"
 ".recOn{ background:red; }"
+".carageOn{ background:red; }"
 
 // navigation UI
 "/* Target Input Controls */"
@@ -199,7 +214,7 @@ const char webpage[] PROGMEM =
 // row 2
 "<button class='btn' onmousedown='backwards()' onmouseup='Stop()' "
 "ontouchstart='backwards()' ontouchend='Stop()'>back</button>"
-"<div></div>"
+"<button class='recBtn' onclick='toggleRec()'>REC: OFF</button>"
 "<button class='btn' onmousedown='forward()' onmouseup='Stop()' "
 "ontouchstart='forward()' ontouchend='Stop()'>forward</button>"
 "<button class='autoBtn' onclick='toggleAuto()'>AUTO: OFF</button>"
@@ -238,7 +253,7 @@ const char webpage[] PROGMEM =
 "<input id='speedSlider' type='range' min='0' max='350' value='90' oninput='updateSpeed(this.value)'>"
 "</div>"
 "<div></div>"
-"<button class='recBtn' onclick='toggleRec()'>REC: OFF</button>"
+"<button class='carrageBtn' onclick='toggleCarrage()'>Carrgae: OFF</button>"
 
 // row 6
 "<div class='lable'>" 
@@ -260,6 +275,7 @@ const char webpage[] PROGMEM =
 " state: <span id='motionState'>0</span><br>"
 "</div>"
 "<div class='lable'>" 
+" heading: <span id='heading'>0</span><br>"
 " mode: <span id='mode'>0</span><br>"
 "</div>"
 
@@ -500,6 +516,22 @@ const char webpage[] PROGMEM =
 "    .then(msg => alert(msg));"
 "}"
 
+//carrage mode button 
+
+"function toggleCarrage(){"
+"  fetch('/toggleCarrage')"
+"    .then(response => response.text())"
+"    .then(state => {"
+"      const btn = document.querySelector('.carrageBtn');"
+"      if(state === 'ON'){"
+"        btn.style.backgroundColor = 'green';"
+"        btn.textContent = 'Carrage: ON';"
+"      } else {"
+"        btn.style.backgroundColor = 'grey';"
+"        btn.textContent = 'Carrage: OFF';"
+"      }"
+"    });"
+"}"
 
 "</script>"
 "</body></html>";

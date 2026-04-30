@@ -15,141 +15,36 @@ int moveCount = 0;
 long startEncoder = 0;
 float startDirection = 0;
 float goalDirection = 0;
-long goalEncoder = 0;
+long goalTime = 0;
 float prevERROR = 0;
 long wait180Start = 0;
 long waitingStart = 0;
+long waitCheck = 0;
 bool executingMove = false;
 int moveType = 0; // -1 for move tyoe = turn and 1 for drive
 long currentEncoder = 0;
-long encoderTolerance = 0;
+long encoderTolerance = 100;
 bool turning = false;
 
-
-
-MotionState prevMotionState = STOPPED;
-MotionState currentMotion = STOPPED;
+long startTime = 0;
 
 bool motionActive = false;
 
 void record(){
-  if (!recording) return;
-
-  if (motionState != STOPPED && prevMotionState == STOPPED) { // if started a move record it
-    currentMotion = motionState;
-    motionActive = true;
-
-    noInterrupts();
-    cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
-    interrupts();
-
-    if (motionState == FORWARD || motionState == BACKWARDS) {
-      startEncoder = (cFL + cFR + cBL + cBR) / 4;   // average of encorder counts
-    } else if (motionState == FORWARDLEFT || motionState == BACKWARDSLEFT) {
-      startEncoder = (cFR + cBR) / 2;
-    } else if (motionState == FORWARDRIGHT|| motionState == BACKWARDSRIGHT) {
-      startEncoder = (cFL + cBL) / 2;
-    }
-    startDirection = Direction;               
-  }
-
-  if (motionState == STOPPED && motionActive && prevMotionState != STOPPED) {
-    endMove();
-  }
-  prevMotionState = motionState;
+  if (!recording) return; // checked in actual motion functions
 }
 
-void endMove() {
+void endMove(MotionState currentMotion) {
   Move m;
-
-  noInterrupts();
-  cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
-  interrupts();
-
-  if (currentMotion == FORWARD) {
-    long delta = ((cFL + cFR + cBL + cBR) / 4) - startEncoder;
-    m.type = FORWARD;
-    m.value = delta;   // encoder ticks 
-    moves[moveCount++] = m;
-    motionActive = false;
+  m.type = currentMotion;
+  if (currentMotion == LEFTTURN || currentMotion == RIGHTTURN) {
+    m.value = Direction - startDirection;
+    while (m.value > 180) m.value -= 360;
+    while (m.value < -180) m.value += 360;
+  } else {
+    m.value = millis() - startTime;
   }
-
-  if (currentMotion == BACKWARDS) {
-    long delta = ((cFL + cFR + cBL + cBR) / 4) - startEncoder;
-    m.type = BACKWARDS;
-    m.value = delta;   // encoder ticks 
-    moves[moveCount++] = m;
-    motionActive = false;
-  }
-
-  if (currentMotion == FORWARDLEFT) {
-    long delta = ((cFR + cBR) / 2) - startEncoder;
-    m.type = FORWARDLEFT;
-    m.value = delta;   // encoder ticks 
-    moves[moveCount++] = m;
-    motionActive = false;
-  }
-
-  if (currentMotion == FORWARDRIGHT) {
-    long delta = ((cFL + cBL) / 2) - startEncoder;
-    m.type = FORWARDRIGHT;
-    m.value = delta;   // encoder ticks 
-    moves[moveCount++] = m;
-    motionActive = false;
-  }
-
-  if (currentMotion == BACKWARDSLEFT) {
-    long delta = ((cFR + cBR) / 2) - startEncoder;
-    m.type = BACKWARDSLEFT;
-    m.value = delta;   // encoder ticks 
-    moves[moveCount++] = m;
-    motionActive = false;
-  }
-
-  if (currentMotion == BACKWARDSRIGHT) {
-    long delta = ((cFL + cBL) / 2) - startEncoder;
-    m.type = BACKWARDSRIGHT;
-    m.value = delta;   // encoder ticks 
-    moves[moveCount++] = m;
-    motionActive = false;
-  }
-
-  if (currentMotion == RIGHTTURN) {
-    float delta = Direction - startDirection;
-
-    // normalize angle
-    while (delta > 180) delta -= 360;
-    while (delta < -180) delta += 360;
-
-    m.type = RIGHTTURN;
-    m.value = delta;
-    moves[moveCount++] = m;
-    motionActive = false;
-  }
-
-  if (currentMotion == LEFTTURN) {
-    float delta = Direction - startDirection;
-
-    while (delta > 180) delta -= 360;
-    while (delta < -180) delta += 360;
-
-    m.type = LEFTTURN;
-    m.value = delta;
-    moves[moveCount++] = m;
-    motionActive = false;
-  }
-
-  if (currentMotion == TURNING_90) {
-    float delta = Direction - startDirection;
-
-    while (delta > 180) delta -= 360;
-    while (delta < -180) delta += 360;
-    if (turnDirection == -1) m.type = LEFTTURN;
-    else if (turnDirection == +1) m.type = RIGHTTURN;
-    m.value = delta;
-    moves[moveCount++] = m;
-    motionActive = false;
-  }
+  moves[moveCount++] = m;
 }
 
 
@@ -158,7 +53,7 @@ void returnmode() {
 
   if (motionState == STARTRETURN) {
 
-    goalDirection = Direction - 170;
+    goalDirection = Direction - 180;
     if (goalDirection < 0) {
       goalDirection += 360;
     }
@@ -169,7 +64,7 @@ void returnmode() {
 
   if (motionState == TURNING_180) {
     if (millis() - wait180Start > 1500 && !(turning)) {
-      leftturn(SPEED);
+      rightturn(50);
       motionState = TURNING_180;
       turning = true;
     }
@@ -178,8 +73,63 @@ void returnmode() {
     while (error < -180) error += 360; 
     if (abs(error) < turnTolerance || (prevERROR * error < 0)) { // 5 degree error tolerance. or overshoot changes sign of error.
       stop();
-      waitingStart = millis();
+      motionState = CHECK_TURN;
+      waitCheck = millis();
       // turning = false;
+    }
+    prevERROR = error;
+  }
+
+  if (motionState == CHECK_TURN) {
+    if (millis() - waitCheck < 200 ) return; 
+    float error = goalDirection - Direction;
+    if (executingMove) {
+      if (abs(error) > 1) {
+        if (error < 0) {
+          leftturn(50);
+          prevERROR = 0;
+          motionState = TURNING_HEADING;
+          return;
+        } else {
+          rightturn(50);
+          prevERROR = 0;
+          motionState = TURNING_HEADING;
+          return;
+        }
+      } else {
+        motionState = WAITING;
+        waitingStart = millis();
+        executingMove = false;
+        moveCount--;
+        return;
+      }
+    } 
+    else if (abs(error) > 1) {
+      if (error < 0) {
+        leftturn(50);
+        prevERROR = 0;
+        motionState = TURNING_HEADING;
+        return;
+      } else {
+        rightturn(50);
+        prevERROR = 0;
+        motionState = TURNING_HEADING;
+        return;
+      }
+    } 
+    else {
+      waitingStart = millis();
+      motionState = WAITING;
+    }
+  }
+
+    if (motionState == TURNING_HEADING) {
+    float error = goalDirection - Direction;
+    while (error > 180) error -= 360; // range: -180 to +180
+    while (error < -180) error += 360; 
+    if (abs(error) < turnTolerance || (prevERROR * error < 0)) { // 5 degree error tolerance. or overshoot changes sign of error.
+      stop();
+      motionState = CHECK_TURN;
     }
     prevERROR = error;
   }
@@ -198,32 +148,21 @@ void returnmode() {
     // invert move
     if (currentMove.type == LEFTTURN) {
       currentMove.type = RIGHTTURN;
-      goalDirection = Direction + currentMove.value + 10; // finds goal direction
+      goalDirection = Direction - currentMove.value; // finds goal direction
       if (goalDirection >= 360) { // mappes to 0 - 360
         goalDirection -= 360;
       }
       moveType = -1;
     } else if (currentMove.type == RIGHTTURN) {
       currentMove.type = LEFTTURN;
-      goalDirection = Direction + currentMove.value - 10; // if delta or current.value is negative then it will move left
+      goalDirection = Direction - currentMove.value; // if delta or current.value is negative then it will move left
       if (goalDirection < 0) {
         goalDirection += 360;
       }
       moveType = -1;
-    }
-
-    noInterrupts();
-    cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
-    interrupts();
-
-    if (currentMove.type == FORWARD || currentMove.type == BACKWARDS) {
-      goalEncoder = ((cFL + cFR + cBL + cBR) / 4) + currentMove.value;   // average of encorder counts
-      moveType = 1;
-    } else if (currentMove.type == FORWARDLEFT || currentMove.type == BACKWARDSLEFT) {
-      goalEncoder = ((cFR + cBR) / 2) + currentMove.value;
-      moveType = 1;
-    } else if (currentMove.type == FORWARDRIGHT|| currentMove.type == BACKWARDSRIGHT) {
-      goalEncoder = ((cFL + cBL) / 2) + currentMove.value;
+    } else {
+      goalTime = millis() + currentMove.value;  
+      // goalEncoder = currentEncoder + 1000// currentEncoder + currentMove.value
       moveType = 1;
     }
 
@@ -247,33 +186,28 @@ void returnmode() {
       while (error < -180) error += 360; 
       if (abs(error) < turnTolerance || (prevERROR * error < 0)) { // 5 degree error tolerance. or overshoot changes sign of error.
         stop();
-        executingMove = false;
-        moveCount--;
+        motionState = CHECK_TURN;
       }
       prevERROR = error;
 
 
     } else if (moveType == 1) {
-      noInterrupts();
-      cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
-      interrupts();
-
-      if (currentMove.type == FORWARD || currentMove.type == BACKWARDS) {
-        currentEncoder = (cFL + cFR + cBL + cBR) / 4;   // average of encorder counts
-      } else if (currentMove.type == FORWARDLEFT || currentMove.type == BACKWARDSLEFT) {
-        currentEncoder = (cFR + cBR) / 2;
-      } else if (currentMove.type == FORWARDRIGHT|| currentMove.type == BACKWARDSRIGHT) {
-        currentEncoder = (cFL + cBL) / 2;
-      }
-
-      float error = goalEncoder - currentEncoder;
-      if ((prevERROR * error < 0) || abs(error) < encoderTolerance) {
+      if (millis() > goalTime) {
         stop();
         executingMove = false;
         moveCount--;
       }
-      prevERROR = error;
     }
+
+      // float error = goalEncoder - currentEncoder;
+      // if ((prevERROR * error < 0) || abs(error) < encoderTolerance) {
+      //   stop();
+      //   executingMove = false;
+      //   moveCount--;
+      // }
+      // prevERROR = error;
+
+
     if (!executingMove) {
       motionState = WAITING;
       waitingStart = millis();

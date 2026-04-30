@@ -30,6 +30,7 @@ extern float globalY;
 extern float shockMagnitude;
 extern int autoStartHeading;
 extern float startHeading;
+bool carrage = false;
 
 
 String stateStr; // for displaying state of the rover when in auto mode
@@ -52,13 +53,13 @@ void setupWebServer(WebServer &server) {
   });
 
   server.on("/rightturn", [&server](){
-    if(mode != FREEDRIVE){ server.send(403,"text/plain","AUTO"); return; }
+    if(mode != FREEDRIVE || carrage){ server.send(403,"text/plain","AUTO"); return; }
     rightturn(SPEED);
     server.send(200,"text/plain","OK");
   });
 
   server.on("/leftturn", [&server](){
-    if(mode != FREEDRIVE){ server.send(403,"text/plain","AUTO"); return; }
+    if(mode != FREEDRIVE || carrage){ server.send(403,"text/plain","AUTO"); return; }
     leftturn(SPEED);
     server.send(200,"text/plain","OK");
   });
@@ -161,6 +162,7 @@ void setupWebServer(WebServer &server) {
       case WAIT_TURN: stateStr = "WAIT TURN"; break;
       case WAIT_BACK: stateStr = "WAIT BACK"; break;
       case START_AUTO: stateStr = "START AUTO"; break;
+      case CHECK_TURN: stateStr = "CHECK_TURN"; break;
 
       default: stateStr = "UNKNOWN";
     }
@@ -184,10 +186,11 @@ void setupWebServer(WebServer &server) {
 
   //update auto mode
   server.on("/toggleAuto", [&server](){
-    if (mode != FREEDRIVE && mode != AUTO) return;
+    if (mode != FREEDRIVE && mode != AUTO && carrage) return;
     autoMode = !autoMode;
     if(autoMode){
       mode = AUTO;
+
       server.send(200, "text/plain", "ON");
       stop();
       motionState = START_AUTO;
@@ -201,7 +204,7 @@ void setupWebServer(WebServer &server) {
 
   //update navigation mode
   server.on("/toggleNavigation", [&server](){
-    if (mode != FREEDRIVE && mode != NAVIGATION) return;
+    if (mode != FREEDRIVE && mode != NAVIGATION && carrage) return;
     navigationMode = !navigationMode;
     if(navigationMode){
       mode = NAVIGATION;
@@ -216,7 +219,7 @@ void setupWebServer(WebServer &server) {
 
   //update return mode
   server.on("/toggleReturn", [&server](){
-    if (mode != FREEDRIVE && mode != RETURN) return;
+    if (mode != FREEDRIVE && mode != RETURN && carrage) return;
     if (recording) return;
     returnMode = !returnMode;
     if(returnMode){
@@ -238,6 +241,16 @@ void setupWebServer(WebServer &server) {
     if (mode == RETURN || motionState != STOPPED) return;
     recording = !recording;
     if(recording){
+      server.send(200, "text/plain", "ON");
+    } else {
+      server.send(200, "text/plain", "OFF");
+    }
+  });
+
+  //update CARRAGE button
+  server.on("/toggleCarrage", [&server](){
+    carrage = !carrage;
+    if(carrage){
       server.send(200, "text/plain", "ON");
     } else {
       server.send(200, "text/plain", "OFF");
