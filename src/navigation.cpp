@@ -197,7 +197,7 @@ void runNavigationMode() {
 
     if (inputState == 6) { 
         float rad = atan2(-globalY, (targetDistance - globalX)); //Get angle from odometry virtual plane
-        desiredHeading = (rad * (180 / PI)) + startHeading;      //Convert odometry into real IMU data
+        desiredHeading = (rad * (180 / PI)) + DanStartHeading;      //Convert odometry into real IMU data
         if (turnDegrees(desiredHeading)) {
             navWaitStart = millis();
             nextState = 3;

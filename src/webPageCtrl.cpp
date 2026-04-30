@@ -17,7 +17,7 @@ extern bool recording;
 extern volatile float frontDistance, leftDistance, rightDistance;
 extern float lefttargetSpeed, righttargetspeed;
 extern float trim;
-extern float Direction;
+extern float Direction; 
 extern int moveCount;
 extern int turning;
 extern float targetDistance;
@@ -29,6 +29,7 @@ extern float globalX;
 extern float globalY; 
 extern float shockMagnitude;
 extern int autoStartHeading;
+extern float startHeading;
 
 
 String stateStr; // for displaying state of the rover when in auto mode
@@ -260,6 +261,36 @@ void setupWebServer(WebServer &server) {
     mode = NAVIGATION;
     server.send(200, "text/plain",
       "Target set: " + String(targetDistance,1) + " mm at " + String(targetAngle,1) + " deg");
+  });
+
+  // SET HOME BUTTON
+  server.on("/setHome", [&server](){
+    // resetEncoders() safely zeroes out globalX and globalY, making this spot (0,0)
+    resetEncoders(); 
+    server.send(200, "text/plain", "Home position set to current location!");
+  });
+
+  server.on("/goHome", [&server](){
+    if (mode == NAVIGATION) {
+      server.send(503, "text/plain", "Rover is in navigation mode (not supported for home)");
+      return;
+    }
+
+    // 1. Calculate distance back to (0,0) using Pythagorean theorem
+    targetDistance = sqrt(pow(globalX, 2) + pow(globalY, 2));
+
+    // 2. Calculate the angle pointing from current (X,Y) back to origin (0,0)
+    // atan2(-Y, -X) gives us the angle pointing exactly backward towards 0,0
+    float angleToHomeRad = atan2(-globalY, -globalX);
+    
+    // 3. Convert rad to degrees and align it with the IMU
+    desiredHeading = (angleToHomeRad * (180.0 / PI)) + DanStartHeading; 
+
+    // 4. Trigger existing Navigation State Machine!
+    inputState = 2; 
+    mode = NAVIGATION;
+
+    server.send(200, "text/plain", "Returning Home! Dist: " + String(targetDistance,1) + "mm");
   });
 }
 

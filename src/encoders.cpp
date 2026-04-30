@@ -19,6 +19,7 @@ const float tick_to_distance =   2 * PI * r / 700; // Check motor datasheet page
 long prevFL = 0, prevFR = 0, prevBL = 0, prevBR = 0; 
 float globalX = 0.0;
 float globalY = 0.0;
+float DanStartHeading = 0.0;
 
 long timeNow = 0;
 long elapsedTime = 0;
@@ -129,7 +130,7 @@ void updateDistances() {
   float dright = (dFR_mm + dBR_mm) / 2.0;
   float deltacenter = (dLeft + dright) / 2.0;
 
-  float relative_heading = heading - startHeading;
+  float relative_heading = heading - DanStartHeading;
   float relative_heading_rad = relative_heading * (PI / 180.0); // Convert IMU degrees to rad
 
   globalX += deltacenter * cos(relative_heading_rad);
@@ -172,5 +173,5 @@ void resetEncoders() {
   globalX = 0.0;
   globalY = 0.0;
   
-  startHeading = heading; // <-- TAKES THE 0 DEGREE SNAPSHOT!
+  DanStartHeading = heading; // <-- TAKES THE 0 DEGREE SNAPSHOT!
 }

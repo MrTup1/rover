@@ -17,7 +17,7 @@
 WebServer server(80);
 // CRASH CHECK
 static unsigned long last_IMU_check = 0;
-const float CRASH_THRESHOLD = 10.0; // TUNE THIS
+const float CRASH_THRESHOLD = 15.0; // TUNE THIS
 unsigned long crashStart = 0; 
 float shockMagnitude;
 

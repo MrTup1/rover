@@ -371,6 +371,8 @@ const char webpage[] PROGMEM =
 "});"
 
 // release anywhere on page activates stop 
+"document.addEventListener('touchend', function(){ fetch('/Stop'); });"
+"document.addEventListener('mouseup', function(){ fetch('/Stop'); });"
 
 "setInterval(() => {"
 "  fetch('/speeds')"

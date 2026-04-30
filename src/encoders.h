@@ -8,7 +8,7 @@ extern long elapsedTime;
 
 extern float leftSideDistance, rightSideDistance;
 extern float globalX, globalY;
-extern float startHeading;
+extern float DanStartHeading;
 
 void encodersInit();
 void updateSpeeds();
