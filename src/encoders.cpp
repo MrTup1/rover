@@ -7,6 +7,7 @@
 // counts for calculation each motor speed
 volatile long encFL = 0, encFR = 0, encBL = 0, encBR = 0;
 long lastFL = 0, lastFR = 0, lastBL = 0, lastBR = 0;
+long cFL = 0, cFR = 0, cBL = 0, cBR = 0;
 
 float fl = 0, fr = 0, bl = 0, br = 0, leftside = 0, rightside = 0;
 unsigned long lastSpeedTime = 0;
@@ -74,7 +75,7 @@ void updateSpeeds() {
   if (elapsedTime < 50000) return;
 
   noInterrupts();
-  long cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
+  cFL = encFL, cFR = encFR, cBL = encBL, cBR = encBR;
   interrupts();
 
   float timeAdjustment = 50000.0 / (float)elapsedTime; //corrects for when elapsed time != 50ms

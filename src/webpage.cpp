@@ -283,6 +283,23 @@ const char webpage[] PROGMEM =
 " Global Y: <span id='globalY'>0</span><br>"
 "</div>"
 
+"<div class='sideSpeed'>"
+"  <button class='go-btn' style='background:grey; display:flex; align-items:center; justify-content:center; gap:5px;' onclick='setHome()'>"
+"    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='white'>"
+"      <path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/>"
+"    </svg>"
+"    SET HOME"
+"  </button>"
+"</div>"
+"<div class='sideSpeed'>"
+"  <button class='go-btn' style='background:grey; display:flex; align-items:center; justify-content:center; gap:5px;' onclick='goHome()'>"
+"    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='white'>"
+"      <path d='M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z'/>"
+"    </svg>"
+"    GO HOME"
+"  </button>"
+"</div>"
+
 "</div>"
 
 "<script>"
@@ -467,6 +484,18 @@ const char webpage[] PROGMEM =
 "    .then(r => r.text())"
 "    .then(msg => alert(msg))"
 "    .catch(() => alert('No response from rover — is it connected?'));"
+"}"
+
+// Set Home function
+"function setHome() {"
+"  fetch('/setHome')"
+"    .then(r => r.text())"
+"    .then(msg => alert(msg));"
+"}"
+"function goHome() {"
+"  fetch('/goHome')"
+"    .then(r => r.text())"
+"    .then(msg => alert(msg));"
 "}"
 
 
