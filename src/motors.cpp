@@ -106,30 +106,30 @@ bool turnDegrees(float targetHeading) { //RIGHT TURN IS POSITIVE, LEFT IS NEGATI
     if (targetHeading >= 360.0) targetHeading -= 360.0;
     if (targetHeading < 0.0) targetHeading += 360.0;
 
-    float error = targetHeading - heading; //constantly checking
-
+    
     //Check whether right of left turn is closer if overlap has occured
     if (error > 180) {
       error -= 360;
     } else if (error < -180) {
       error += 360;
     }
-
-    float turnKp = 1.8;       // The initial push
-    float turnKi = 0.3;       // THE MAGIC NUMBER: How fast it ramps up power when stuck
-    int maxTurnSpeed = 90;    // Absolute limit to prevent madness
-    int minTurnSpeed = 40;
-
+    
+    float turnKp = 1.8;       
+    float turnKi = 0.3;       
+    int maxTurnSpeed = 90;    
+    int minTurnSpeed = 55;
+    
+    float error = targetHeading - heading; 
 
     unsigned long now = millis();
     float dt = (now - lastTurnTime) / 1000.0; // convert to seconds
-    if (dt > 0.1) dt = 0.05; // Safety catch for the first loop from static variable 
+    if (dt > 0.1) dt = 0.05; 
         lastTurnTime = now;
 
     //Right turn is positive, left turn is negative
     if (abs(error) > 2.0) {
       turnIntegral += error * dt;
-      turnIntegral = constrain(turnIntegral, -40.0, 40.0); //anti winding
+      turnIntegral = constrain(turnIntegral, -40.0, 40.0); 
 
       int calculatedSpeed = (error * turnKp) + (turnIntegral * turnKi);
       

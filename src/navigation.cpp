@@ -54,13 +54,13 @@ void runNavigationMode() {
     }
 
     if (inputState == 3) {
-        //Rotation finished, time to move forward to the goal
+        //Rotation finished, move forward to goal
         distance_error = sqrt((pow((targetDistance - globalX) , 2) + pow((globalY) , 2)));
         
         if (distance_error < 50 || globalX >= targetDistance) {
             stop();
             destinationReached = true;
-            inputState = 0; // Go all the way back to waiting for a new Serial input
+            inputState = 0; 
             mode = FREEDRIVE;
         }
 
@@ -156,7 +156,7 @@ void runNavigationMode() {
                 if (openSpaceStart == 0) {
                     openSpaceStart = millis();
                     forward(SPEED);
-                } else if (millis() - openSpaceStart > OPEN_SPACE_TIME_MS) { //read 3 cont
+                } else if (millis() - openSpaceStart > OPEN_SPACE_TIME_MS) { 
                     edgeDetected = true;
                 } else {
                     forward(SPEED);

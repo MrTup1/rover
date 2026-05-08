@@ -289,17 +289,12 @@ void setupWebServer(WebServer &server) {
       return;
     }
 
-    // 1. Calculate distance back to (0,0) using Pythagorean theorem
     targetDistance = sqrt(pow(globalX, 2) + pow(globalY, 2));
 
-    // 2. Calculate the angle pointing from current (X,Y) back to origin (0,0)
-    // atan2(-Y, -X) gives us the angle pointing exactly backward towards 0,0
     float angleToHomeRad = atan2(-globalY, -globalX);
-    
-    // 3. Convert rad to degrees and align it with the IMU
+  
     desiredHeading = (angleToHomeRad * (180.0 / PI)) + DanStartHeading; 
 
-    // 4. Trigger existing Navigation State Machine!
     inputState = 2; 
     mode = NAVIGATION;
 
